@@ -45,6 +45,17 @@ class CogBasic(commands.Cog, name='Basic'):
         """CogBasic init"""
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        """Coroutine called when a member joins a guild
+
+        Parameters
+            member (discord.Member) : Member who joined
+        """
+        channel = member.guild.system_channel
+        if channel is not None:
+            await channel.send(f"Welcome {member.mention}!")
+
     @commands.command(name='hello', aliases=['hey'])
     async def greet(self, ctx):
         """Say hello
@@ -52,7 +63,7 @@ class CogBasic(commands.Cog, name='Basic'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        await ctx.send(f"Hello `{ctx.author.name}`!")
+        await ctx.send(f"Hello {ctx.author.mention}!")
 
     @commands.command(name='roll', aliases=['dice'])
     async def roll(self, ctx, *expr):

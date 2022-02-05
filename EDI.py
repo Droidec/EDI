@@ -61,7 +61,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Start bot
-    bot = EDI(command_prefix='!', activity=Game(name='!help'), description="I'm here to help you")
+    bot = EDI(command_prefix='!', activity=Game(name='!help'))
     bot.add_cog(cogs.CogErrHandler(bot))
     bot.add_cog(cogs.CogBasic(bot))
     bot.run(args.token)
