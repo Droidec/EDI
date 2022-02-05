@@ -36,14 +36,14 @@ import traceback
 import logging
 
 class CogErrHandler(commands.Cog, name='Err'):
-    """CogErrorHandler handles cog errors
+    """Handle cog errors
 
     Attributes
         See commands.Cog
     """
-    def __init__(self):
+    def __init__(self, bot):
         """CogErrHandler init"""
-        pass
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, err):

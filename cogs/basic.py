@@ -36,19 +36,18 @@ import random
 import re
 
 class CogBasic(commands.Cog, name='Basic'):
-    """CogBasic handles all basic commands and listeners
+    """All basic commands and listeners
 
     Attributes
         See commands.Cog
     """
-    def __init__(self):
+    def __init__(self, bot):
         """CogBasic init"""
-        pass
+        self.bot = bot
 
     @commands.command(name='hello', aliases=['hey'])
     async def greet(self, ctx):
-        """Coroutine called when a user greets the bot
-        Say hello to user
+        """Say hello
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -57,8 +56,7 @@ class CogBasic(commands.Cog, name='Basic'):
 
     @commands.command(name='roll', aliases=['dice'])
     async def roll(self, ctx, *expr):
-        """Coroutine called when a user wants to roll some dice
-        Roll some dice (1d6, 2d12, ...) and sum the result
+        """Roll some dice (1d6, 2d12, ...) and sum the result
 
         Parameters
             ctx (commands.Context) : Invocation context
