@@ -32,8 +32,8 @@ EDI basic commands and listeners
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from discord.ext import commands
-import logging
 import random
+import re
 
 class CogBasic(commands.Cog, name='Basic'):
     """CogBasic handles all basic commands and listeners
@@ -56,21 +56,28 @@ class CogBasic(commands.Cog, name='Basic'):
         await ctx.send(f"Hello `{ctx.author.name}`!")
 
     @commands.command(name='roll', aliases=['dice'])
-    async def roll(self, ctx, dice: str):
-        """Coroutine called when a user wants to roll a dice
-        Roll a d6 dice
+    async def roll(self, ctx, *dices):
+        """Coroutine called when a user wants to roll some dice
+        Roll some dice with a pattern like:
+        xdy or xDy where x is the number of rolls and y the number of sides
 
         Parameters
             ctx (commands.Context) : Invocation context
         """
         results = []
         try:
-            rolls, sides = [int(num) for num in dice.split('d')]
+            for dice in dices:
+                rolls = []
+                nb_rolls, nb_sides = [int(num) for num in re.split(r'd|D', dice, 1)]
+                if nb_rolls <= 0 or nb_sides <= 0:
+                    raise ValueError
+
+                for _ in range(nb_rolls):
+                    rolls.append(random.randint(1, nb_sides))
+
+                results.append(rolls)
         except ValueError:
-            await ctx.send('Bad format for the dice...')
+            await ctx.send(f"`{dice}` has a bad format...")
             return
 
-        for roll in range(rolls):
-            results.append(random.randint(1, sides))
-
-        await ctx.send(', '.join(str(roll) for roll in results) + f' ({sum(results)})')
+        await ctx.send('\n'.join([f"`{dice}`: {', '.join(map(str, rolls))}" for dice, rolls in zip(dices, results)]))
