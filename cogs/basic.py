@@ -58,12 +58,15 @@ class CogBasic(commands.Cog, name='Basic'):
     @commands.command(name='roll', aliases=['dice'])
     async def roll(self, ctx, *dices):
         """Coroutine called when a user wants to roll some dice
-        Roll some dice with a pattern like:
-        xdy or xDy where x is the number of rolls and y the number of sides
+        Roll some dice (1d6, 2d12, ...)
 
         Parameters
             ctx (commands.Context) : Invocation context
         """
+        if not dices:
+            await ctx.send("A dice is required to perform a roll...")
+            return
+
         results = []
         try:
             for dice in dices:
@@ -77,7 +80,7 @@ class CogBasic(commands.Cog, name='Basic'):
 
                 results.append(rolls)
         except ValueError:
-            await ctx.send(f"`{dice}` has a bad format...")
+            await ctx.send(f"The `{dice}` dice has a bad format...")
             return
 
-        await ctx.send('\n'.join([f"`{dice}`: {', '.join(map(str, rolls))}" for dice, rolls in zip(dices, results)]))
+        await ctx.send('\n'.join([f"`{dice.replace(' ', '')}`: {', '.join(map(str, rolls))}" for dice, rolls in zip(dices, results)]))
