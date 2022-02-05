@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI init
+EDI cog hello
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -31,4 +31,23 @@ EDI init
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .bot import Bot
+from discord.ext import commands
+
+class CogHello(commands.Cog, name='Hello module'):
+    """CogHello handles cog hello commands
+
+    Attributes
+        See commands.Cog
+    """
+    def __init__(self):
+        """CogHello init"""
+        pass
+
+    @commands.command(name='hello')
+    async def hello(self, ctx):
+        """Coroutine called when a user says hello
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        await ctx.send(f"Hello {ctx.author.name}!")

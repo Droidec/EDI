@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI discord bot
+EDI init
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -31,38 +31,5 @@ EDI discord bot
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from argparse import ArgumentParser, RawTextHelpFormatter
-from cogs.err import CogErrHandler
-from cogs.hello import CogHello
-from discord.ext import commands
-import logging
-import sys
-
-class EDI(commands.Bot):
-    """EDI defines EDI skeleton
-
-    Attributes
-        See commands.Bot
-    """
-    def __init__(self, *args, **kwargs):
-        """Bot init"""
-        super().__init__(*args, **kwargs)
-
-    async def on_ready(self):
-        """Coroutine called when the Bot is UP"""
-        logging.info(f"Bot is UP: {self.user.name}:{self.user.id}")
-
-if __name__ == "__main__":
-    # Set logging
-    logging.basicConfig(level=logging.INFO, format="[%(asctime)s] (%(levelname)s) %(message)s")
-
-    # Parse arguments
-    parser = ArgumentParser(description="EDI discord bot", formatter_class=RawTextHelpFormatter)
-    parser.add_argument('token', help="Discord bot token")
-    args = parser.parse_args()
-
-    # Start bot
-    bot = EDI(command_prefix='!')
-    bot.add_cog(CogErrHandler())
-    bot.add_cog(CogHello())
-    bot.run(args.token)
+from .err import CogErrHandler
+from .hello import CogHello

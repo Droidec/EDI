@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI discord client
+EDI cog error handler
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -31,28 +31,30 @@ EDI discord client
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import discord
+from discord.ext import commands
+import traceback
 import logging
 
-class Bot(discord.Client):
-    def __init__(self, *args, **kwargs):
-        """Bot init"""
-        super().__init__(*args, **kwargs)
+class CogErrHandler(commands.Cog):
+    """CogErrorHandler handles cog errors
 
-    async def on_ready(self):
-        """Coroutine called when the Bot is UP"""
-        logging.info(f"Bot is UP as '{self.user.name}:{self.user.id}'")
+    Attributes
+        See commands.Cog
+    """
+    def __init__(self):
+        """CogErrHandler init"""
+        pass
 
-    async def on_message(self, msg):
-        """Coroutine called when a message is created and sent
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, err):
+        """Coroutine called when an error is raised from a command
 
         Parameters
-            msg (discord.Message) : Message that has been sent
+            ctx (commands.Context) : Invocation context
+            err (commands.CommandError) : Error that was raised
         """
-        # We do not want the bot to reply to itself
-        if msg.author.id == self.user.id:
-            return
-
-        logging.info(f"Message sent from '{msg.author.name}:{msg.author.id}' in '{msg.channel.name}' channel!")
-        if msg.content.startswith('!hello'):
-            await msg.channel.send(f'Hello {msg.author.name}!')
+        if isinstance(err, commands.CommandNotFound):
+            await ctx.send("Sorry, I do not know that command...")
+        else:
+            logging.error(f"Exception raised in command '{ctx.command}'")
+            logging.error(''.join(traceback.format_exception(type(err), err, err.__traceback__)))
