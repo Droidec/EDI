@@ -35,7 +35,7 @@ from discord.ext import commands
 import traceback
 import logging
 
-class CogErrHandler(commands.Cog):
+class CogErrHandler(commands.Cog, name='Err'):
     """CogErrorHandler handles cog errors
 
     Attributes
@@ -54,7 +54,10 @@ class CogErrHandler(commands.Cog):
             err (commands.CommandError) : Error that was raised
         """
         if isinstance(err, commands.CommandNotFound):
-            await ctx.send("Sorry, I do not know that command...")
+            await ctx.send("Sorry, I do not know this command...")
+        elif isinstance(err, commands.MissingRequiredArgument):
+            await ctx.send("Sorry, an argument is missing for this command...")
         else:
+            await ctx.send("Sorry, this command raised an exception...")
             logging.error(f"Exception raised in command '{ctx.command}'")
             logging.error(''.join(traceback.format_exception(type(err), err, err.__traceback__)))

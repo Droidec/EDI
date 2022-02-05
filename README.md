@@ -22,6 +22,7 @@ List of bot commands
 
 ### Basic commands
 
-| Command | Aliases | Description   | Usage  |
-| ------- | ------- | ------------- | ------ |
-| hello   | hey     | Greet the bot | !hello |
+| Command | Aliases | Description    | Usage  |
+| ------- | ------- | -------------- | ------ |
+| hello   | hey     | Greet the bot  | !hello |
+| roll    | dice    | Roll a dice    | !roll  |

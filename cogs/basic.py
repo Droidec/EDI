@@ -32,8 +32,10 @@ EDI basic commands and listeners
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from discord.ext import commands
+import logging
+import random
 
-class CogBasic(commands.Cog):
+class CogBasic(commands.Cog, name='Basic'):
     """CogBasic handles all basic commands and listeners
 
     Attributes
@@ -52,3 +54,23 @@ class CogBasic(commands.Cog):
             ctx (commands.Context) : Invocation context
         """
         await ctx.send(f"Hello `{ctx.author.name}`!")
+
+    @commands.command(name='roll', aliases=['dice'])
+    async def roll(self, ctx, dice: str):
+        """Coroutine called when a user wants to roll a dice
+        Roll a d6 dice
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        results = []
+        try:
+            rolls, sides = [int(num) for num in dice.split('d')]
+        except ValueError:
+            await ctx.send('Bad format for the dice...')
+            return
+
+        for roll in range(rolls):
+            results.append(random.randint(1, sides))
+
+        await ctx.send(', '.join(str(roll) for roll in results) + f' ({sum(results)})')
