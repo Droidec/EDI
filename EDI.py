@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI discord bot
+EDI Discord bot
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -32,10 +32,9 @@ EDI discord bot
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from argparse import ArgumentParser, RawTextHelpFormatter
-from cogs.err import CogErrHandler
-from cogs.hello import CogHello
 from discord.ext import commands
 import logging
+import cogs
 import sys
 
 class EDI(commands.Bot):
@@ -63,6 +62,6 @@ if __name__ == "__main__":
 
     # Start bot
     bot = EDI(command_prefix='!')
-    bot.add_cog(CogErrHandler())
-    bot.add_cog(CogHello())
+    bot.add_cog(cogs.CogErrHandler())
+    bot.add_cog(cogs.CogBasic())
     bot.run(args.token)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI cog hello
+EDI basic commands and listeners
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -33,21 +33,22 @@ EDI cog hello
 
 from discord.ext import commands
 
-class CogHello(commands.Cog, name='Hello module'):
-    """CogHello handles cog hello commands
+class CogBasic(commands.Cog):
+    """CogBasic handles all basic commands and listeners
 
     Attributes
         See commands.Cog
     """
     def __init__(self):
-        """CogHello init"""
+        """CogBasic init"""
         pass
 
-    @commands.command(name='hello')
-    async def hello(self, ctx):
-        """Coroutine called when a user says hello
+    @commands.command(name='hello', aliases=['hey'])
+    async def greet(self, ctx):
+        """Coroutine called when a user greets the bot
+        Say hello to user
 
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        await ctx.send(f"Hello {ctx.author.name}!")
+        await ctx.send(f"Hello `{ctx.author.name}`!")

@@ -1,7 +1,7 @@
 # EDI
 
-`EDI` (pronounced 'Ee-Dee' [ˈiːdiː]) is my personal Discord Bot.
-Its name and its personality is taken from the Mass Effect universe.
+`EDI` (pronounced 'Ee-Dee' [ˈiːdiː]) is my personal Discord Bot.  
+Its name and its personality is taken from the [Mass Effect](https://masseffect.fandom.com/wiki/EDI) universe.
 
 ## Dependencies
 
@@ -22,6 +22,6 @@ List of bot commands
 
 ### Basic commands
 
-| Command | Description   | Usage  |
-| ------- | ------------- | ------ |
-| hello   | Greet the bot | !hello |
+| Command | Aliases | Description   | Usage  |
+| ------- | ------- | ------------- | ------ |
+| hello   | hey     | Greet the bot | !hello |

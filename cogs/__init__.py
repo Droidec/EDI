@@ -32,4 +32,4 @@ EDI cogs (collection of commands and listeners)
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from .err import CogErrHandler
-from .hello import CogHello
+from .basic import CogBasic
