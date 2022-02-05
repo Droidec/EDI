@@ -34,15 +34,25 @@ EDI discord client
 import discord
 import logging
 
-class Client(discord.Client):
+class Bot(discord.Client):
+    def __init__(self, *args, **kwargs):
+        """Bot init"""
+        super().__init__(*args, **kwargs)
+
     async def on_ready(self):
+        """Coroutine called when the Bot is UP"""
         logging.info(f"Bot is UP as '{self.user.name}:{self.user.id}'")
 
     async def on_message(self, msg):
+        """Coroutine called when a message is created and sent
+
+        Parameters
+            msg (discord.Message) : Message that has been sent
+        """
         # We do not want the bot to reply to itself
         if msg.author.id == self.user.id:
             return
 
-        logging.info(f"Received a message from '{msg.author.name}:{msg.author.id}'!")
+        logging.info(f"Message sent from '{msg.author.name}:{msg.author.id}' in '{msg.channel.name}' channel!")
         if msg.content.startswith('!hello'):
             await msg.channel.send(f'Hello {msg.author.name}!')

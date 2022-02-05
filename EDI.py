@@ -32,9 +32,9 @@ EDI discord bot
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from argparse import ArgumentParser, RawTextHelpFormatter
-from edi.client import Client
 import logging
 import sys
+import edi
 
 if __name__ == "__main__":
     # Set logging
@@ -46,5 +46,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Start bot
-    client = Client()
-    client.run(args.token)
+    bot = edi.Bot()
+    bot.run(args.token)
