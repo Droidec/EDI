@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI init
+EDI cogs (collection of commands and listeners)
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
