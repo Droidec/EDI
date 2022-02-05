@@ -98,7 +98,7 @@ class CogBasic(commands.Cog, name='Basic'):
                 if tokens[index]:
                     await ctx.send(f"`{tokens[index]}` dice has a bad format...")
                 else:
-                    await ctx.send(f"Invalid expression...")
+                    await ctx.send("Invalid expression...")
                 return
 
         # Send result

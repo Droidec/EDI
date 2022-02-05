@@ -36,7 +36,6 @@ from discord.ext import commands
 from discord import Game
 import logging
 import cogs
-import sys
 
 class EDI(commands.Bot):
     """EDI skeleton
