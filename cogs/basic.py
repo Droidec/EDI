@@ -56,31 +56,54 @@ class CogBasic(commands.Cog, name='Basic'):
         await ctx.send(f"Hello `{ctx.author.name}`!")
 
     @commands.command(name='roll', aliases=['dice'])
-    async def roll(self, ctx, *dices):
+    async def roll(self, ctx, *expr):
         """Coroutine called when a user wants to roll some dice
-        Roll some dice (1d6, 2d12, ...)
+        Roll some dice (1d6, 2d12, ...) and some the result
 
         Parameters
             ctx (commands.Context) : Invocation context
+            expr (tuple) : Roll expression
         """
-        if not dices:
-            await ctx.send("A dice is required to perform a roll...")
+        dices = []
+        res = []
+
+        # Check consistency
+        if not expr:
+            await ctx.send("An expression is required to perform a roll...")
             return
 
-        results = []
-        try:
-            for dice in dices:
-                rolls = []
-                nb_rolls, nb_sides = [int(num) for num in re.split(r'd|D', dice, 1)]
-                if nb_rolls <= 0 or nb_sides <= 0:
+        # Split user tokens
+        tokens = [x.strip() for x in ''.join(expr).split('+')]
+        for token in tokens:
+            dices.append([x.strip() for x in re.split(r'd|D', token, 1)])
+
+        # Roll dices
+        for index, dice in enumerate(dices):
+            try:
+                if len(dice) == 1:
+                    roll = [int(dice[0])]
+                    res.append(roll)
+                elif len(dice) == 2:
+                    rolls = []
+                    nb_rolls = int(dice[0]) if dice[0] else 1
+                    nb_sides = int(dice[1])
+                    if nb_rolls <= 0 or nb_sides <= 0:
+                        raise ValueError
+
+                    for _ in range(nb_rolls):
+                        rolls.append(random.randint(1, nb_sides))
+
+                    res.append(rolls)
+                else:
                     raise ValueError
+            except ValueError:
+                if tokens[index]:
+                    await ctx.send(f"`{tokens[index]}` dice has a bad format...")
+                else:
+                    await ctx.send(f"Invalid expression...")
+                return
 
-                for _ in range(nb_rolls):
-                    rolls.append(random.randint(1, nb_sides))
-
-                results.append(rolls)
-        except ValueError:
-            await ctx.send(f"The `{dice}` dice has a bad format...")
-            return
-
-        await ctx.send('\n'.join([f"`{dice.replace(' ', '')}`: {', '.join(map(str, rolls))}" for dice, rolls in zip(dices, results)]))
+        # Send result
+        algebra = '+'.join([f"({'+'.join(map(str, rolls))})" for rolls in res])
+        total = sum([sum(rolls) for rolls in res])
+        await ctx.send(f"{algebra}\n=`{total}`")

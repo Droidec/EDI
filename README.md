@@ -22,7 +22,7 @@ List of bot commands
 
 ### Basic commands
 
-| Command | Aliases | Description                     | Usage                     |
-| ------- | ------- | ------------------------------- | ------------------------- |
-| hello   | hey     | Greet the bot                   | !hello                    |
-| roll    | dice    | Roll some dice (1d6, 2d12, ...) | !roll [dice] ([dice] ...) |
+| Command | Aliases | Description                                         | Usage        | Example       |
+| ------- | ------- | --------------------------------------------------- | ------------ | ------------- |
+| hello   | hey     | Greet the bot                                       | !hello       |               |
+| roll    | dice    | Roll some dice (1d6, 2d12, ...) and some the result | !roll [expr] | !roll 2d6 + 5 |
