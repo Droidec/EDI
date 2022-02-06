@@ -18,14 +18,14 @@ python3 EDI.py <token>
 
 ## Commands
 
-List of bot commands
+List of bot commands with `!` prefix
 
 ### Basic commands
 
-| Command        | Description                                        | Usage        | Example       |
-| -------------- | -------------------------------------------------- | ------------ | ------------- |
-| hello&#124;hey | Greet the bot                                      | !hello       |               |
-| roll&#124;dice | Roll some dice (1d6, 2d12, ...) and sum the result | !roll [expr] | !roll 2d6 + 5 |
+| Command          | Description                                        | Usage        | Example       |
+| ---------------- | -------------------------------------------------- | ------------ | ------------- |
+| hello &#124; hey | Greet the bot                                      | !hello       |               |
+| roll &#124; dice | Roll some dice (1d6, 2d12, ...) and sum the result | !roll [expr] | !roll 2d6 + 5 |
 
 ### Voice commands
 
