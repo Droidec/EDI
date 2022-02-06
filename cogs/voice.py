@@ -96,7 +96,6 @@ class CogVoice(commands.Cog, name='voice'):
             await ctx.invoke(self.join)
 
         if ctx.voice_client.is_playing():
-            # Ignore while currently playing. TODO: make a queue
             return
 
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(path))
