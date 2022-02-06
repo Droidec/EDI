@@ -31,7 +31,10 @@ List of bot commands with `!` prefix
 
 ### Voice commands
 
-| Command | Description                                          | Usage           | Example       |
-| ------- | ---------------------------------------------------- | --------------- | ------------- |
-| join    | Join a voice channel<br />(channel name is optional) | !join [channel] | !join General |
-| leave   | Leave a voice channel                                | !leave          |               |
+| Command | Description                                          | Usage           | Example                                  |
+| ------- | ---------------------------------------------------- | --------------- | ---------------------------------------- |
+| join    | Join a voice channel<br />(channel name is optional) | !join [channel] | !join General                            |
+| play    | Play audio from local filesystem                     | !play [path]    | !play C:\Users\derov\Downloads\input.mp3 |
+| pause   | Pause audio                                          | !pause          |                                          |
+| resume  | Resume audio                                         | !resume         |                                          |
+| leave   | Leave a voice channel                                | !leave          |                                          |

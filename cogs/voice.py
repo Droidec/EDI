@@ -81,16 +81,60 @@ class CogVoice(commands.Cog, name='voice'):
         await ch.connect()
 
     @commands.command(name='play')
-    async def play(self, ctx, *, query):
-        """Play audio of a file from the local filesystem
+    async def play(self, ctx, *, path: str):
+        """Play audio from local filesystem
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            path (str) : Path of the file to play
+        """
+        vc = ctx.voice_client
+
+        if not vc:
+            await ctx.invoke(self.join)
+
+        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(path))
+        vc.play(source, after=lambda e: logging.error(f"Player error: {e}") if e else None)
+
+        await ctx.send(f"Now playing: `{path}`")
+
+    @commands.command(name='pause')
+    async def pause(self, ctx):
+        """Pause audio
 
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query))
-        ctx.voice_client.play(source, after=lambda e: logging.error(f"Player error: {e}") if e else None)
+        vc = ctx.voice_client
 
-        await ctx.send(f"Now playing: {query}")
+        if not vc:
+            return await ctx.send("Not currently in a voice channel...")
+        elif not vc.is_playing():
+            return await ctx.send("Not currently playing anything...")
+        elif vc.is_paused():
+            return
+
+        vc.pause()
+        await ctx.send("Paused...")
+
+    @commands.command(name='resume')
+    async def resume(self, ctx):
+        """Resume audio
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        vc = ctx.voice_client
+
+        if not vc:
+            return await ctx.send("Not currently in a voice channel...")
+        elif not vc.is_playing():
+            return await ctx.send("Not currently playing anything...")
+        elif not vc.is_paused():
+            return
+
+        vc.resume()
+        await ctx.send("Resuming...")
 
     @commands.command(name='leave')
     async def leave(self, ctx):
@@ -99,7 +143,9 @@ class CogVoice(commands.Cog, name='voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        if ctx.voice_client is not None:
-            return await ctx.voice_client.disconnect()
+        vc = ctx.voice_client
 
-        await ctx.send("Not currently in a voice channel...")
+        if not vc:
+            await ctx.send("Not currently in a voice channel...")
+
+        return await vc.disconnect()
