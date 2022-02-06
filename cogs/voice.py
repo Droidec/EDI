@@ -31,9 +31,10 @@ EDI voice commands and listeners
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from discord.ext import commands
 import discord
 import logging
-from discord.ext import commands
+import os
 
 class CogVoice(commands.Cog, name='voice'):
     """All voice commands and listeners
@@ -88,6 +89,9 @@ class CogVoice(commands.Cog, name='voice'):
             ctx (commands.Context) : Invocation context
             path (str) : Path of the file to play
         """
+        if not os.path.isfile(path):
+            return await ctx.send("Specified path is not an existing regular file...")
+
         if not ctx.voice_client:
             await ctx.invoke(self.join)
 
