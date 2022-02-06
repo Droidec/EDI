@@ -146,6 +146,23 @@ class CogVoice(commands.Cog, name='voice'):
         vc.resume()
         await ctx.send("Resuming...")
 
+    @commands.command(name='stop')
+    async def stop(self, ctx):
+        """Stop audio
+
+        Parameters
+           ctx (commands.Context) : Invocation context
+        """
+        vc = ctx.voice_client
+
+        if not vc:
+            return await ctx.send("Not currently in a voice channel...")
+        elif not vc.is_playing() and not vc.is_paused():
+            return await ctx.send("Not currently playing anything...")
+
+        vc.stop()
+        await ctx.send("Stopped...")
+
     @commands.command(name='leave')
     async def leave(self, ctx):
         """Leave a voice channel

@@ -37,4 +37,5 @@ List of bot commands with `!` prefix
 | play    | Play audio from local filesystem                     | !play [path]    | !play C:\Users\derov\Downloads\input.mp3 |
 | pause   | Pause audio                                          | !pause          |                                          |
 | resume  | Resume audio                                         | !resume         |                                          |
+| stop    | Stop audio                                           | !stop           |                                          |
 | leave   | Leave a voice channel                                | !leave          |                                          |
