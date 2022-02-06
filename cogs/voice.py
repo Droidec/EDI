@@ -80,6 +80,18 @@ class CogVoice(commands.Cog, name='voice'):
 
         await ch.connect()
 
+    @commands.command(name='play')
+    async def play(self, ctx, *, query):
+        """Play audio of a file from the local filesystem
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query, executable='/opt/homebrew/bin/ffmpeg'))
+        ctx.voice_client.play(source, after=lambda e: logging.error(f"Player error: {e}") if e else None)
+
+        await ctx.send(f"Now playing: {query}")
+
     @commands.command(name='leave')
     async def leave(self, ctx):
         """Leave a voice channel
