@@ -24,7 +24,7 @@ List of bot commands with `!` prefix
 
 | Command          | Description                                        | Usage        | Example       |
 | ---------------- | -------------------------------------------------- | ------------ | ------------- |
-| hello &#124; hey | Greet the bot                                      | !hello       |               |
+| hello &#124; hey | Mention and greet user                             | !hello       |               |
 | roll &#124; dice | Roll some dice (1d6, 2d12, ...) and sum the result | !roll [expr] | !roll 2d6 + 5 |
 
 ### Voice commands

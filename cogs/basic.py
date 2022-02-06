@@ -58,7 +58,7 @@ class CogBasic(commands.Cog, name='Basic'):
 
     @commands.command(name='hello', aliases=['hey'])
     async def greet(self, ctx):
-        """Say hello
+        """Mention and greet user
 
         Parameters
             ctx (commands.Context) : Invocation context
