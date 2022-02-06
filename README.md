@@ -7,6 +7,8 @@ Its name and its personality is taken from the [Mass Effect](https://masseffect.
 
 - [python3](https://www.python.org/) >= 3.6 : Use python3 instead of python2
 - [discord.py](https://discordpy.readthedocs.io/en/stable) >= 1.7.3 : API wrapper for Discord
+- [PyNaCl] >= 1.5.0 : Python binding for [libsodium](https://github.com/jedisct1/libsodium)
+- [ffmpeg](https://www.ffmpeg.org/)
 
 ## Usage
 
