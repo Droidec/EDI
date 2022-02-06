@@ -52,7 +52,7 @@ class CogVoice(commands.Cog, name='voice'):
 
         Parameters
             ctx (commands.Context) : Invocation context
-            channel (str) [optional] : Voice channel name to join
+            channel (tuple) [optional] : Voice channel name to join
         """
         # Get channel...
         if channel:
@@ -88,13 +88,14 @@ class CogVoice(commands.Cog, name='voice'):
             ctx (commands.Context) : Invocation context
             path (str) : Path of the file to play
         """
-        vc = ctx.voice_client
-
-        if not vc:
+        if not ctx.voice_client:
             await ctx.invoke(self.join)
 
+        if ctx.voice_client.is_playing():
+            return
+
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(path))
-        vc.play(source, after=lambda e: logging.error(f"Player error: {e}") if e else None)
+        ctx.voice_client.play(source, after=lambda e: logging.error(f"Player error: {e}") if e else None)
 
         await ctx.send(f"Now playing: `{path}`")
 
@@ -110,7 +111,10 @@ class CogVoice(commands.Cog, name='voice'):
         if not vc:
             return await ctx.send("Not currently in a voice channel...")
         elif not vc.is_playing():
-            return await ctx.send("Not currently playing anything...")
+            if not vc.is_paused():
+                return await ctx.send("Not currently playing anything...")
+            else:
+                return await ctx.send("Already in pause...")
         elif vc.is_paused():
             return
 
@@ -128,10 +132,11 @@ class CogVoice(commands.Cog, name='voice'):
 
         if not vc:
             return await ctx.send("Not currently in a voice channel...")
-        elif not vc.is_playing():
-            return await ctx.send("Not currently playing anything...")
         elif not vc.is_paused():
-            return
+            if not vc.is_playing():
+                return await ctx.send("Not currently playing anything...")
+            else:
+                return await ctx.send("Currently playing...")
 
         vc.resume()
         await ctx.send("Resuming...")
