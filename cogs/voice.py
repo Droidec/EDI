@@ -81,18 +81,13 @@ class CogVoice(commands.Cog, name='voice'):
         await ch.connect()
 
     @commands.command(name='play')
-    async def play(self, ctx, *path):
+    async def play(self, ctx, *, path: str):
         """Play audio from local filesystem
 
         Parameters
             ctx (commands.Context) : Invocation context
-            path (tuple) : Path of the file to play
+            path (str) : Path of the file to play
         """
-        if not path:
-            return await ctx.send("A path is required to play audio...")
-
-        file = ' '.join(path) if len(path) > 1 else path[0]
-
         if not ctx.voice_client:
             await ctx.invoke(self.join)
 
@@ -100,10 +95,10 @@ class CogVoice(commands.Cog, name='voice'):
             # Ignore while currently playing. TODO: make a queue
             return
 
-        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(file))
+        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(path))
         ctx.voice_client.play(source, after=lambda e: logging.error(f"Player error: {e}") if e else None)
 
-        await ctx.send(f"Now playing: `{file}`")
+        await ctx.send(f"Now playing: `{path}`")
 
     @commands.command(name='pause')
     async def pause(self, ctx):
