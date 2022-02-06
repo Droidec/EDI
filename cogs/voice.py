@@ -52,19 +52,28 @@ class CogVoice(commands.Cog, name='voice'):
 
         Parameters
             ctx (commands.Context) : Invocation context
-            channel (str) [optional] : Channel name to join
+            channel (str) [optional] : Voice channel name to join
         """
+        # Get channel...
         if channel:
-            # Join channel by name
+            # ...by name
             name = ' '.join(channel) if len(channel) > 1 else channel[0]
             ch = discord.utils.get(ctx.guild.channels, name=name)
         else:
-            # Join user's channel
+            # ...by user
             try:
                 ch = ctx.author.voice.channel
             except AttributeError:
                 return await ctx.send("No channel specified and user is not in a channel...")
 
+        # Check consistency
+        if ch is None:
+            return await ctx.send("Voice channel specified does not exist...")
+
+        if isinstance(ch, discord.TextChannel):
+            return await ctx.send("Cannot connect to a text channel...")
+
+        # Join voice channel
         if ctx.voice_client is not None:
             # Move bot if already in a voice channel
             return await ctx.voice_client.move_to(ch)
@@ -78,4 +87,7 @@ class CogVoice(commands.Cog, name='voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        await ctx.voice_client.disconnect()
+        if ctx.voice_client is not None:
+            return await ctx.voice_client.disconnect()
+
+        await ctx.send("Not currently in a voice channel...")
