@@ -87,7 +87,7 @@ class CogVoice(commands.Cog, name='voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query, executable='/opt/homebrew/bin/ffmpeg'))
+        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query))
         ctx.voice_client.play(source, after=lambda e: logging.error(f"Player error: {e}") if e else None)
 
         await ctx.send(f"Now playing: {query}")
