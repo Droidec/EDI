@@ -78,8 +78,7 @@ class CogBasic(commands.Cog, name='Basic'):
 
         # Check consistency
         if not expr:
-            await ctx.send("An expression is required to perform a roll...")
-            return
+            return await ctx.send("An expression is required to perform a roll...")
 
         # Split user tokens
         tokens = [x.strip() for x in ''.join(expr).split('+')]
@@ -107,10 +106,9 @@ class CogBasic(commands.Cog, name='Basic'):
                     raise ValueError
             except ValueError:
                 if tokens[index]:
-                    await ctx.send(f"`{tokens[index]}` dice has a bad format...")
+                    return await ctx.send(f"`{tokens[index]}` dice has a bad format...")
                 else:
-                    await ctx.send("Invalid expression...")
-                return
+                    return await ctx.send("Invalid expression...")
 
         # Send result
         algebra = '+'.join([f"({'+'.join(map(str, rolls))})" for rolls in res])

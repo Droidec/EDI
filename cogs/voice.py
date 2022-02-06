@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI Discord bot
+EDI voice commands and listeners
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -31,38 +31,51 @@ EDI Discord bot
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from argparse import ArgumentParser, RawTextHelpFormatter
-from discord.ext import commands
 import discord
 import logging
-import cogs
+from discord.ext import commands
 
-class EDI(commands.Bot):
-    """EDI skeleton
+class CogVoice(commands.Cog, name='voice'):
+    """All voice commands and listeners
 
     Attributes
-        See commands.Bot
+        See commands.Cog
     """
-    def __init__(self, *args, **kwargs):
-        """Bot init"""
-        super().__init__(*args, **kwargs)
+    def __init__(self, bot):
+        """CogVoice init"""
+        self.bot = bot
 
-    async def on_ready(self):
-        """Coroutine called when the Bot is UP"""
-        logging.info(f"Bot is UP: {self.user.name}:{self.user.id}")
+    @commands.command(name='join')
+    async def join(self, ctx, *channel):
+        """Join a voice channel
+        If a channel is specified, join that channel instead of user's channel
 
-if __name__ == "__main__":
-    # Set logging
-    logging.basicConfig(level=logging.INFO, format="[%(asctime)s] (%(levelname)s) %(message)s")
+        Parameters
+            ctx (commands.Context) : Invocation context
+            channel (str) [optional] : Channel name to join
+        """
+        if channel:
+            # Join channel by name
+            name = ' '.join(channel) if len(channel) > 1 else channel[0]
+            ch = discord.utils.get(ctx.guild.channels, name=name)
+        else:
+            # Join user's channel
+            try:
+                ch = ctx.author.voice.channel
+            except AttributeError:
+                return await ctx.send("No channel specified and user is not in a channel...")
 
-    # Parse arguments
-    parser = ArgumentParser(description="EDI discord bot", formatter_class=RawTextHelpFormatter)
-    parser.add_argument('token', help="Discord bot token")
-    args = parser.parse_args()
+        if ctx.voice_client is not None:
+            # Move bot if already in a voice channel
+            return await ctx.voice_client.move_to(ch)
 
-    # Start bot
-    bot = EDI(command_prefix='!', activity=discord.Game(name='!help'))
-    bot.add_cog(cogs.CogErrHandler(bot))
-    bot.add_cog(cogs.CogBasic(bot))
-    bot.add_cog(cogs.CogVoice(bot))
-    bot.run(args.token)
+        await ch.connect()
+
+    @commands.command(name='leave')
+    async def leave(self, ctx):
+        """Leave a voice channel
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        await ctx.voice_client.disconnect()

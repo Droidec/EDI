@@ -26,3 +26,10 @@ List of bot commands
 | ------- | ------- | -------------------------------------------------- | ------------ | ------------- |
 | hello   | hey     | Greet the bot                                      | !hello       |               |
 | roll    | dice    | Roll some dice (1d6, 2d12, ...) and sum the result | !roll [expr] | !roll 2d6 + 5 |
+
+### Voice commands
+
+| Command | Aliases | Description                                          | Usage           | Example       |
+| ------- | ------- | ---------------------------------------------------- | --------------- | ------------- |
+| join    |         | Join a voice channel<br />(channel name is optional) | !join [channel] |               |
+| leave   |         | Leave a voice channel                                | !leave          |               |
