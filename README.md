@@ -22,14 +22,14 @@ List of bot commands
 
 ### Basic commands
 
-| Command | Aliases | Description                                        | Usage        | Example       |
-| ------- | ------- | -------------------------------------------------- | ------------ | ------------- |
-| hello   | hey     | Greet the bot                                      | !hello       |               |
-| roll    | dice    | Roll some dice (1d6, 2d12, ...) and sum the result | !roll [expr] | !roll 2d6 + 5 |
+| Command        | Description                                        | Usage        | Example       |
+| -------------- | -------------------------------------------------- | ------------ | ------------- |
+| hello&#124;hey | Greet the bot                                      | !hello       |               |
+| roll&#124;dice | Roll some dice (1d6, 2d12, ...) and sum the result | !roll [expr] | !roll 2d6 + 5 |
 
 ### Voice commands
 
-| Command | Aliases | Description                                          | Usage           | Example       |
-| ------- | ------- | ---------------------------------------------------- | --------------- | ------------- |
-| join    |         | Join a voice channel<br />(channel name is optional) | !join [channel] |               |
-| leave   |         | Leave a voice channel                                | !leave          |               |
+| Command | Description                                          | Usage           | Example       |
+| ------- | ---------------------------------------------------- | --------------- | ------------- |
+| join    | Join a voice channel<br />(channel name is optional) | !join [channel] | !join General |
+| leave   | Leave a voice channel                                | !leave          |               |
