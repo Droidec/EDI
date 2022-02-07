@@ -32,6 +32,7 @@ EDI cog error handler
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from discord.ext import commands
+from .voice import VoiceContextError
 import traceback
 import logging
 
@@ -53,11 +54,15 @@ class CogErrHandler(commands.Cog, name='Err'):
             ctx (commands.Context) : Invocation context
             err (commands.CommandError) : Error that was raised
         """
-        if isinstance(err, commands.CommandNotFound):
-            await ctx.send("Sorry, I do not know this command...")
+        if isinstance(err, VoiceContextError):
+            return
+        elif isinstance(err, commands.CommandNotFound):
+            msg = "Sorry, I do not know this command..."
         elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.send("Sorry, an argument is missing for this command...")
+            msg = "Sorry, an argument is missing for this command..."
         else:
-            await ctx.send("Sorry, this command raised an exception...")
+            msg = "Sorry, this command raised an exception..."
             logging.error(f"Exception raised in command '{ctx.command}'")
             logging.error(''.join(traceback.format_exception(type(err), err, err.__traceback__)))
+
+        await ctx.send(msg)

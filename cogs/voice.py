@@ -36,6 +36,9 @@ import discord
 import logging
 import os
 
+class VoiceContextError(commands.CommandError):
+    """Custom Exception class for voice context error"""
+
 class CogVoice(commands.Cog, name='voice'):
     """All voice commands and listeners
 
@@ -150,7 +153,8 @@ class CogVoice(commands.Cog, name='voice'):
             ctx (commands.Context) : Invocation context
         """
         if ctx.voice_client is None:
-            return await ctx.send("Not currently in a voice channel...")
+            await ctx.send("Not currently in a voice channel...")
+            raise VoiceContextError("Not in a voice channel")
 
     @pause.before_invoke
     @resume.before_invoke
@@ -161,6 +165,9 @@ class CogVoice(commands.Cog, name='voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        await ensure_voice(ctx)
-        if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
-            return await ctx.send("Not currently playing anything...")
+        if ctx.voice_client is None:
+            await ctx.send("Not currently in a voice channel...")
+            raise VoiceContextError("Not in a voice channel")
+        elif not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
+            await ctx.send("Not currently playing anything...")
+            raise VoiceContextError("Not currently playing")
