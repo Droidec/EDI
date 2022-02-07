@@ -79,5 +79,5 @@ if __name__ == "__main__":
     bot.add_cog(cogs.CogErrHandler(bot))
     bot.add_cog(cogs.CogBasic(bot))
     bot.add_cog(cogs.CogVoice(bot))
-    bot.add_cog(cogs.CogPlex(bot))
+    bot.add_cog(cogs.CogPlexServer(bot))
     bot.run(args.discord_token)
