@@ -41,8 +41,8 @@ List of bot commands with `!` prefix
 | stop    | Stop audio                       | !stop           |                                          |
 | leave   | Leave a voice channel            | !leave          |                                          |
 
-### PleX Server commands
+### PleX Server group commands
 
-| Command | Description                    | Usage                         | Example            |
-| ------- | ------------------------------ | ----------------------------- | ------------------ |
-| list    | Consult album names by section | !plex list \<section\> [page] | !plex list Games 5 |
+| Subcommand | Description                    | Usage                         | Example            |
+| ---------- | ------------------------------ | ----------------------------- | ------------------ |
+| list       | Consult album names by section | !plex list \<section\> [page] | !plex list Games 5 |
