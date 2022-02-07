@@ -33,6 +33,8 @@ EDI PleX commands and listeners
 
 from discord.ext import commands
 
+NB_RESULTS_PER_PAGE = 30
+
 class CogPlex(commands.Cog, name='plex'):
     """All plex commands and listeners
 
@@ -44,12 +46,35 @@ class CogPlex(commands.Cog, name='plex'):
         self.bot = bot
 
     @commands.command(name='plex')
-    async def plex(self, ctx):
+    async def plex(self, ctx, page: int=None):
         """Test PleX API
 
         Parameters
             ctx (commands.Context) : Invocation context
+            page (int) [Optional] : Page of results (Default is 1)
         """
         await ctx.trigger_typing()
-        games = self.bot.plex.library.section('Games Music')
-        await ctx.send(f"```{'\n'.join([album.title for album in games.search(libtype='album')])}```")
+
+        if page is None:
+            page = 1
+
+        if page <= 0:
+            return await ctx.send("The page number must be > 0...")
+
+        # Query PleX results
+        section = self.bot.plex.library.section('Games Music')
+        results = [album.title for album in games.search(libtype='album', sort='titleSort')]
+        total = len(results)
+        nb_pages = total // NB_RESULTS_PER_PAGE + int(total % NB_RESULTS_PER_PAGE == 0)
+
+        if page > nb_pages:
+            return await ctx.send("There is currently {nb_pages} pages at max...")
+
+        start = NB_RESULTS_PER_PAGE * (page - 1)
+        end = NB_RESULTS_PER_PAGE * page
+
+        # Render result in a Discord embed
+        embed = discord.Embed(title=f'{page}/{nb_pages}', description='\n'.join(results[start:end]))
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        embed.set_footer(text=f"Research requested by: {ctx.author.display_name}")
+        await ctx.send(embed=embed)
