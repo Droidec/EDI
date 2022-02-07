@@ -59,9 +59,10 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
     @commands.group(name='plex')
     async def plex(self, ctx):
-        """Subcommands:
+        """Invoke PleX Server commands
 
-        search: Consult album names by section
+        Subcommands:
+        - search: Consult album names by section
         """
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid plex command passed...")
