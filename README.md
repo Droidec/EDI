@@ -32,17 +32,17 @@ List of bot commands with `!` prefix
 
 ### Voice commands
 
-| Command | Description                                          | Usage           | Example                                  |
-| ------- | ---------------------------------------------------- | --------------- | ---------------------------------------- |
-| join    | Join a voice channel<br />(channel name is optional) | !join [channel] | !join General                            |
-| play    | Play audio from local filesystem                     | !play [path]    | !play C:\Users\derov\Downloads\input.mp3 |
-| pause   | Pause audio                                          | !pause          |                                          |
-| resume  | Resume audio                                         | !resume         |                                          |
-| stop    | Stop audio                                           | !stop           |                                          |
-| leave   | Leave a voice channel                                | !leave          |                                          |
+| Command | Description                      | Usage           | Example                                  |
+| ------- | -------------------------------- | --------------- | ---------------------------------------- |
+| join    | Join a voice channel             | !join [channel] | !join General                            |
+| play    | Play audio from local filesystem | !play \<path\>  | !play C:\Users\derov\Downloads\input.mp3 |
+| pause   | Pause audio                      | !pause          |                                          |
+| resume  | Resume audio                     | !resume         |                                          |
+| stop    | Stop audio                       | !stop           |                                          |
+| leave   | Leave a voice channel            | !leave          |                                          |
 
 ### PleX Server commands
 
-| Command | Description                                            | Usage                  | Example       |
-| ------- | ------------------------------------------------------ | ---------------------- | ------------- |
-| plex    | Consult album names by section<br />(page is optional) | !plex [section] [page] | !plex Games 1 |
+| Command | Description                    | Usage                  | Example       |
+| ------- | ------------------------------ | ---------------------- | ------------- |
+| plex    | Consult album names by section | !plex \<section\> [page] | !plex Games 1 |
