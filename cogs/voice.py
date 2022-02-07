@@ -39,7 +39,7 @@ import os
 class VoiceContextError(commands.CommandError):
     """Custom Exception class for voice context error"""
 
-class CogVoice(commands.Cog, name='voice'):
+class CogVoice(commands.Cog, name='Voice'):
     """All voice commands and listeners
 
     Attributes

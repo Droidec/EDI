@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI PleX commands and listeners
+EDI PleX server commands and listeners
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -34,8 +34,10 @@ EDI PleX commands and listeners
 from discord.ext import commands
 import discord
 
+# Limit the number of results per search
 NB_RESULTS_PER_PAGE = 30
 
+# Possible sections
 Sections = {
     'Animes' : 'Animes Music',
     'Audios' : 'Audio Series',
@@ -45,8 +47,8 @@ Sections = {
     'Shows' : 'TV Shows Music',
 }
 
-class CogPlex(commands.Cog, name='plex'):
-    """All plex commands and listeners
+class CogPlexServer(commands.Cog, name='PleX Server'):
+    """All PleX Server commands and listeners
 
     Attributes
         See commands.Cog
@@ -56,28 +58,33 @@ class CogPlex(commands.Cog, name='plex'):
         self.bot = bot
 
     @commands.command(name='plex')
-    async def plex(self, ctx, section, page=None):
+    async def plex(self, ctx, section: str, page: str=None):
         """Test PleX API
 
         Parameters
             ctx (commands.Context) : Invocation context
-            section (str) : Section to search for (Animes, Audios, Games, Movies, Music, Shows)
-            page (int) [Optional] : Page of results (Default is 1)
+            section (str) : Section to search for (Animes, Audios, Games, Movies, Music or Shows)
+            page (str) [Optional] : Page of results (Default is 1)
         """
         await ctx.trigger_typing()
 
         # Check consistency
         if page is None:
-            page = 1
+            page = '1'
 
-        if not isinstance(page, int) or page <= 0:
+        try:
+            page = int(page)
+        except ValueError:
             return await ctx.send("Invalid page number...")
 
         # Query PleX results
-        section = self.bot.plex.library.section(Sections[section])
+        try:
+            section = self.bot.plex.library.section(Sections[section])
+        except KeyError:
+            return await ctx.send("Invalid section...")
         results = [album.title for album in section.search(libtype='album', sort='titleSort')]
         total = len(results)
-        nb_pages = total // NB_RESULTS_PER_PAGE + int(total % NB_RESULTS_PER_PAGE == 0)
+        nb_pages = total // NB_RESULTS_PER_PAGE + int(total % NB_RESULTS_PER_PAGE != 0)
 
         if page > nb_pages:
             return await ctx.send(f"There is currently {nb_pages} pages at max...")

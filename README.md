@@ -8,7 +8,8 @@ Its name and its personality is taken from the [Mass Effect](https://masseffect.
 - [python3](https://www.python.org/) >= 3.6 : Use python3 instead of python2
 - [discord.py](https://discordpy.readthedocs.io/en/stable) >= 1.7.3 : API wrapper for Discord
 - [PyNaCl](https://pypi.org/project/PyNaCl/) >= 1.5.0 : Python binding for [libsodium](https://github.com/jedisct1/libsodium)
-- [ffmpeg](https://www.ffmpeg.org/)
+- [plexapi](https://pypi.org/project/PlexAPI/) >= 4.9.1 : API wrapper for PleX Servers
+- [ffmpeg](https://www.ffmpeg.org/) : Collection of audio and video decoders/encoders
 
 ## Usage
 
@@ -40,8 +41,8 @@ List of bot commands with `!` prefix
 | stop    | Stop audio                                           | !stop           |                                          |
 | leave   | Leave a voice channel                                | !leave          |                                          |
 
-### PleX commands
+### PleX Server commands
 
-| Command | Description                                | Usage                  | Example       |
-| ------- | ------------------------------------------ | ---------------------- | ------------- |
-| plex    | Test PleX research<br />(page is optional) | !plex [section] [page] | !plex Games 1 |
+| Command | Description                                             | Usage                  | Example       |
+| ------- | ------------------------------------------------------- | ---------------------- | ------------- |
+| plex    | Consult album names by sections<br />(page is optional) | !plex [section] [page] | !plex Games 1 |
