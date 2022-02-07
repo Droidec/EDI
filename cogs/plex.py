@@ -39,12 +39,12 @@ NB_RESULTS_PER_PAGE = 30
 
 # Possible sections
 Sections = {
-    'Animes' : 'Animes Music',
-    'Audios' : 'Audio Series',
-    'Games' : 'Games Music',
-    'Movies' : 'Movies Music',
-    'Music' : 'Music',
-    'Shows' : 'TV Shows Music',
+    'animes' : 'Animes Music',
+    'audios' : 'Audio Series',
+    'games' : 'Games Music',
+    'movies' : 'Movies Music',
+    'music' : 'Music',
+    'shows' : 'TV Shows Music',
 }
 
 class CogPlexServer(commands.Cog, name='PleX Server'):
@@ -79,7 +79,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
         # Query PleX results
         try:
-            s = self.bot.plex.library.section(Sections[section])
+            s = self.bot.plex.library.section(Sections[section.lower()])
         except KeyError:
             return await ctx.send("Invalid section...")
         results = [album.title for album in s.search(libtype='album', sort='titleSort')]
