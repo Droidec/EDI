@@ -16,7 +16,7 @@ Its name and its personality is taken from the [Mass Effect](https://masseffect.
 From the command line, simply call the `EDI.py` file as follows:
 
 ```cmd
-python3 EDI.py <token>
+python3 EDI.py <PleX Server base URL> <PleX account token> <Discord bot token>
 ```
 
 ## Commands
