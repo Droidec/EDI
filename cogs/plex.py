@@ -54,7 +54,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         See commands.Cog
     """
     def __init__(self, bot):
-        """CogVoice init"""
+        """CogPlexServer init"""
         self.bot = bot
 
     @commands.group(name='plex')
