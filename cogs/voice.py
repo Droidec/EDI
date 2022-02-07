@@ -110,20 +110,8 @@ class CogVoice(commands.Cog, name='voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        vc = ctx.voice_client
-
-        if not vc:
-            return await ctx.send("Not currently in a voice channel...")
-        elif not vc.is_playing():
-            if not vc.is_paused():
-                return await ctx.send("Not currently playing anything...")
-            else:
-                return await ctx.send("Already in pause...")
-        elif vc.is_paused():
-            return
-
-        vc.pause()
-        await ctx.send("Paused...")
+        ctx.voice_client.pause()
+        await ctx.send("Player paused...")
 
     @commands.command(name='resume')
     async def resume(self, ctx):
@@ -132,18 +120,8 @@ class CogVoice(commands.Cog, name='voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        vc = ctx.voice_client
-
-        if not vc:
-            return await ctx.send("Not currently in a voice channel...")
-        elif not vc.is_paused():
-            if not vc.is_playing():
-                return await ctx.send("Not currently playing anything...")
-            else:
-                return await ctx.send("Currently playing...")
-
-        vc.resume()
-        await ctx.send("Resuming...")
+        ctx.voice_client.resume()
+        await ctx.send("Player resumed...")
 
     @commands.command(name='stop')
     async def stop(self, ctx):
@@ -152,15 +130,8 @@ class CogVoice(commands.Cog, name='voice'):
         Parameters
            ctx (commands.Context) : Invocation context
         """
-        vc = ctx.voice_client
-
-        if not vc:
-            return await ctx.send("Not currently in a voice channel...")
-        elif not vc.is_playing() and not vc.is_paused():
-            return await ctx.send("Not currently playing anything...")
-
-        vc.stop()
-        await ctx.send("Stopped...")
+        ctx.voice_client.stop()
+        await ctx.send("Player stopped...")
 
     @commands.command(name='leave')
     async def leave(self, ctx):
@@ -169,9 +140,27 @@ class CogVoice(commands.Cog, name='voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        vc = ctx.voice_client
+        return await ctx.voice_client.disconnect()
 
-        if not vc:
-            await ctx.send("Not currently in a voice channel...")
+    @leave.before_invoke
+    async def ensure_voice(self, ctx):
+        """Ensure that EDI is in a voice channel
 
-        return await vc.disconnect()
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        if ctx.voice_client is None:
+            return await ctx.send("Not currently in a voice channel...")
+
+    @pause.before_invoke
+    @resume.before_invoke
+    @stop.before_invoke
+    async def ensure_play(self, ctx):
+        """Ensure that EDI is in a voice channel and player is active
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        await ensure_voice(ctx)
+        if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
+            return await ctx.send("Not currently playing anything...")
