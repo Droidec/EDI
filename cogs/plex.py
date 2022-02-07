@@ -59,7 +59,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
     @commands.command(name='plex')
     async def plex(self, ctx, section: str, page: str=None):
-        """Test PleX API
+        """Consult album names by section
 
         Parameters
             ctx (commands.Context) : Invocation context

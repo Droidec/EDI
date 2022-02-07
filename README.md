@@ -43,6 +43,6 @@ List of bot commands with `!` prefix
 
 ### PleX Server commands
 
-| Command | Description                                             | Usage                  | Example       |
-| ------- | ------------------------------------------------------- | ---------------------- | ------------- |
-| plex    | Consult album names by sections<br />(page is optional) | !plex [section] [page] | !plex Games 1 |
+| Command | Description                                            | Usage                  | Example       |
+| ------- | ------------------------------------------------------ | ---------------------- | ------------- |
+| plex    | Consult album names by section<br />(page is optional) | !plex [section] [page] | !plex Games 1 |
