@@ -63,13 +63,13 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid plex command passed...")
 
-    @plex.command(name='search')
+    @plex.command(name='list')
     async def list(self, ctx, section: str, page: str=None):
         """Consult album names by section
 
         Parameters
             ctx (commands.Context) : Invocation context
-            section (str) : Section to search for (Animes, Audios, Games, Movies, Music or Shows)
+            section (str) : Section to list (Animes, Audios, Games, Movies, Music or Shows)
             page (str) [Optional] : Page of results (Default is 1)
         """
         await ctx.trigger_typing()
@@ -101,5 +101,5 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         # Render result in a Discord embed
         embed = discord.Embed(title=f'Page {page} of {nb_pages} in {section} section', description='\n'.join(results[start:end]))
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-        embed.set_footer(text=f"Research requested by: {ctx.author.display_name}")
+        embed.set_footer(text=f"List requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
