@@ -64,7 +64,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
             await ctx.send("Invalid plex command passed...")
 
     @plex.command(name='search')
-    async def search(self, ctx, section: str, page: str=None):
+    async def list(self, ctx, section: str, page: str=None):
         """Consult album names by section
 
         Parameters
