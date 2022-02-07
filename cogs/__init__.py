@@ -34,3 +34,4 @@ EDI cogs (collection of commands and listeners)
 from .err import CogErrHandler
 from .basic import CogBasic
 from .voice import CogVoice
+from .plex import CogPlex

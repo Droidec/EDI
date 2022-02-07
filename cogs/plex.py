@@ -30,3 +30,26 @@ EDI PleX commands and listeners
 # ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+from discord.ext import commands
+
+class CogPlex(commands.Cog, name='plex'):
+    """All plex commands and listeners
+
+    Attributes
+        See commands.Cog
+    """
+    def __init__(self, bot):
+        """CogVoice init"""
+        self.bot = bot
+
+    @commands.command(name='plex')
+    async def plex(self, ctx):
+        """Test PleX API
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        await ctx.trigger_typing()
+        games = self.bot.plex.library.section('Games Music')
+        await ctx.send(f"```{'\n'.join([album.title for album in games.search(libtype='album')])}```")

@@ -39,3 +39,9 @@ List of bot commands with `!` prefix
 | resume  | Resume audio                                         | !resume         |                                          |
 | stop    | Stop audio                                           | !stop           |                                          |
 | leave   | Leave a voice channel                                | !leave          |                                          |
+
+### PleX commands
+
+| Command | Description | Usage | Example |
+| ------- | ----------- | ----- | ------- |
+| plex    | Test PleX   | !plex |         |
