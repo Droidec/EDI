@@ -32,6 +32,7 @@ EDI Discord bot
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from argparse import ArgumentParser, RawTextHelpFormatter
+from plexapi.server import PlexServer
 from discord.ext import commands
 import discord
 import logging
@@ -46,6 +47,16 @@ class EDI(commands.Bot):
     def __init__(self, *args, **kwargs):
         """Bot init"""
         super().__init__(*args, **kwargs)
+        self.plex = None
+
+    def init_plex(self, base_url, token):
+        """Initialize PleX context
+
+        Parameters
+            base_url (str) : Base URL of the PleX server to connect to
+            token (str) : PleX account token
+        """
+        self.plex = PlexServer(base_url, token)
 
     async def on_ready(self):
         """Coroutine called when the Bot is UP"""
@@ -57,12 +68,15 @@ if __name__ == "__main__":
 
     # Parse arguments
     parser = ArgumentParser(description="EDI discord bot", formatter_class=RawTextHelpFormatter)
-    parser.add_argument('token', help="Discord bot token")
+    parser.add_argument('plex_base_url', help="Base URL of the PleX server to connect to")
+    parser.add_argument('plex_token', help="PleX account token")
+    parser.add_argument('discord_token', help="Discord bot token")
     args = parser.parse_args()
 
     # Start bot
     bot = EDI(command_prefix='!', activity=discord.Game(name='!help'))
+    bot.init_plex(args.plex_base_url, args.plex_token)
     bot.add_cog(cogs.CogErrHandler(bot))
     bot.add_cog(cogs.CogBasic(bot))
     bot.add_cog(cogs.CogVoice(bot))
-    bot.run(args.token)
+    bot.run(args.discord_token)
