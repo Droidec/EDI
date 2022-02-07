@@ -32,8 +32,18 @@ EDI PleX commands and listeners
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from discord.ext import commands
+import discord
 
 NB_RESULTS_PER_PAGE = 30
+
+Sections = {
+    'Animes' : 'Animes Music',
+    'Audios' : 'Audio Series',
+    'Games' : 'Games Music',
+    'Movies' : 'Movies Music',
+    'Music' : 'Music',
+    'Shows' : 'TV Shows Music',
+}
 
 class CogPlex(commands.Cog, name='plex'):
     """All plex commands and listeners
@@ -46,35 +56,37 @@ class CogPlex(commands.Cog, name='plex'):
         self.bot = bot
 
     @commands.command(name='plex')
-    async def plex(self, ctx, page: int=None):
+    async def plex(self, ctx, section, page=None):
         """Test PleX API
 
         Parameters
             ctx (commands.Context) : Invocation context
+            section (str) : Section to search for (Animes, Audios, Games, Movies, Music, Shows)
             page (int) [Optional] : Page of results (Default is 1)
         """
         await ctx.trigger_typing()
 
+        # Check consistency
         if page is None:
             page = 1
 
-        if page <= 0:
-            return await ctx.send("The page number must be > 0...")
+        if not isinstance(page, int) or page <= 0:
+            return await ctx.send("Invalid page number...")
 
         # Query PleX results
-        section = self.bot.plex.library.section('Games Music')
-        results = [album.title for album in games.search(libtype='album', sort='titleSort')]
+        section = self.bot.plex.library.section(Sections[section])
+        results = [album.title for album in section.search(libtype='album', sort='titleSort')]
         total = len(results)
         nb_pages = total // NB_RESULTS_PER_PAGE + int(total % NB_RESULTS_PER_PAGE == 0)
 
         if page > nb_pages:
-            return await ctx.send("There is currently {nb_pages} pages at max...")
+            return await ctx.send(f"There is currently {nb_pages} pages at max...")
 
         start = NB_RESULTS_PER_PAGE * (page - 1)
         end = NB_RESULTS_PER_PAGE * page
 
         # Render result in a Discord embed
-        embed = discord.Embed(title=f'{page}/{nb_pages}', description='\n'.join(results[start:end]))
+        embed = discord.Embed(title=f'Page {page} of {nb_pages} in {section} section', description='\n'.join(results[start:end]))
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         embed.set_footer(text=f"Research requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)

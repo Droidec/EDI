@@ -42,6 +42,6 @@ List of bot commands with `!` prefix
 
 ### PleX commands
 
-| Command | Description                                | Usage        | Example        |
-| ------- | ------------------------------------------ | ------------ | -------------- |
-| plex    | Test PleX research<br />(page is optional) | !plex [page] | !plex 1        |
+| Command | Description                                | Usage                  | Example       |
+| ------- | ------------------------------------------ | ---------------------- | ------------- |
+| plex    | Test PleX research<br />(page is optional) | !plex [section] [page] | !plex Games 1 |
