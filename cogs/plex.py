@@ -79,10 +79,10 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
         # Query PleX results
         try:
-            section = self.bot.plex.library.section(Sections[section])
+            s = self.bot.plex.library.section(Sections[section])
         except KeyError:
             return await ctx.send("Invalid section...")
-        results = [album.title for album in section.search(libtype='album', sort='titleSort')]
+        results = [album.title for album in s.search(libtype='album', sort='titleSort')]
         total = len(results)
         nb_pages = total // NB_RESULTS_PER_PAGE + int(total % NB_RESULTS_PER_PAGE != 0)
 
