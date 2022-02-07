@@ -35,7 +35,7 @@ from discord.ext import commands
 import discord
 
 # Limit the number of results per search
-NB_RESULTS_PER_PAGE = 30
+NB_RESULTS_PER_PAGE = 20
 
 # Possible sections
 Sections = {
