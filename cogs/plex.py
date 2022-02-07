@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI PleX server commands and listeners
+EDI PleX Server commands and listeners
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -57,8 +57,18 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         """CogVoice init"""
         self.bot = bot
 
-    @commands.command(name='plex')
-    async def plex(self, ctx, section: str, page: str=None):
+    @commands.group(name='plex')
+    async def plex(self, ctx):
+        """PleX main command
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Invalid plex command passed...")
+
+    @plex.command(name='search')
+    async def search(self, ctx, section: str, page: str=None):
         """Consult album names by section
 
         Parameters
