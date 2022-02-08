@@ -31,6 +31,7 @@ EDI PleX Server commands and listeners
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from datetime import datetime as dt
 from discord.ext import commands
 import discord
 import plexapi
@@ -38,6 +39,9 @@ import os
 
 # Limit the number of results per search
 NB_RESULTS_PER_PAGE = 20
+
+# Limit the number of tracks per embed field
+NB_TRACKS_PER_EMBED_FIELD = 20
 
 # Possible sections
 Sections = {
@@ -127,6 +131,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         """
         await ctx.trigger_typing()
         thumb = None
+        ite = 0
 
         # Check consistency
         try:
@@ -139,18 +144,34 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         except plexapi.exceptions.NotFound:
             return await ctx.send("Could not find album...")
 
+        tracks = a.tracks()
+        nb_tracks = len(tracks)
+
         # Search thumbnail
         location = tracks[0].media[0].parts[0].file
-        thumb_path = f"{Partitions[section.lower()]}/{os.path.dirname(location.split('/', 3)[3])}/Cover.jpg"
-        if os.path.isfile(thumb_path):
+        thumb_path = f"{Partitions[section.lower()]}/{os.path.dirname(location.split('/', 3)[3])}"
+        try:
+            cover = [name for name in os.listdir(thumb_path) if 'Cover' in name][0]
+            thumb_path = f'{thumb_path}/{cover}'
+        except IndexError:
+            cover = None
+
+        if cover is not None and os.path.isfile(thumb_path):
             thumb = discord.File(thumb_path)
 
         # Build Discord embed
         embed = discord.Embed(title=a.title, description=a.artist().title, color=discord.Color.blue())
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         if thumb is not None:
-            embed.set_thumbnail(url=f'attachment://{os.path.basename(thumb_path)}')
-        embed.add_field(name='Tracks', value='\n'.join(f"{track.index}. {track.title} [{track.duration}]" for track in a.tracks()))
+            embed.set_thumbnail(url=f'attachment://{cover)}')
+
+        while (NB_TRACKS_PER_EMBED_FIELD * ite) < nb_tracks:
+            start = NB_TRACKS_PER_EMBED_FIELD * ite
+            end = NB_TRACKS_PER_EMBED_FIELD * (ite + 1)
+            value = '\n'.join(f"{track.index}. {track.title} [{dt.fromtimestamp(track.duration/1000.0).strftime('%M:%S')}]" for track in tracks[start:end])
+            embed.add_field(name=f'{start+1} - {min(nb_tracks, end)}', value=value, inline=False)
+            ite += 1
+
         embed.set_footer(text=f"Info requested by: {ctx.author.display_name}")
 
         await ctx.send(file=thumb, embed=embed)
