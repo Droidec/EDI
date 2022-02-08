@@ -170,7 +170,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
         try:
             a = s.search(title=album, libtype='album', limit=1)[0]
-        except plexapi.exceptions.NotFound:
+        except (plexapi.exceptions.NotFound, IndexError):
             return await ctx.send("Could not find album...")
 
         tracks = a.tracks()

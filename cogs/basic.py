@@ -115,15 +115,3 @@ class CogBasic(commands.Cog, name='Basic'):
         algebra = '+'.join([f"({'+'.join(map(str, rolls))})" for rolls in res])
         total = sum([sum(rolls) for rolls in res])
         await ctx.send(f"{algebra}\n=`{total}`")
-
-    @commands.command(name='embed')
-    async def embed(self, ctx):
-        """Test Discord embed
-
-        Parameters
-            ctx (commands.Context) : Invocation context
-        """
-        file = discord.File('Z:\\Assassination Classroom\\VO Music Collection\\Bye Bye YESTERDAY\\Cover.jpg')
-        embed = discord.Embed(title='バイバイ YESTERDAY')
-        embed.set_thumbnail(url='attachment://Cover.jpg')
-        await ctx.send(file=file, embed=embed)
