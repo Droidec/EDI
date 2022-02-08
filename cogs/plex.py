@@ -120,13 +120,39 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         embed.set_footer(text=f"List requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
+    @plex.command(name='search')
+    async def search(self, ctx, section: str, keyword: str)
+        """ Search album by keyword
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            section (str) : Section to search in (Animes, Audios, Games, Movies, Music or Shows)
+            keyword (str) : Keyword to search for
+        """
+        await ctx.trigger_typing()
+
+        # Check consistency
+        try:
+            s = self.bot.plex.library.section(Sections[section.lower()])
+        except KeyError:
+            return await ctx.send("Invalid session...")
+
+        # Search by keyword
+        results = [album.title for album in s.search(title=keyword, libtype='album', limit=20)]
+
+        # Render result in Discord embed
+        embed = Discord.Embed(title='Results...', description='\n'.join(results))
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        embed.set_footer(text=f"List requested by: {ctx.author.display_name}")
+        await ctx.send(embed=embed)
+
     @plex.command(name='info')
     async def info(self, ctx, section: str, album: str):
         """Get album info
 
         Parameters
             ctx (commands.Context) : Invocation context
-            section (str) : Section to list (Animes, Audios, Games, Movies, Music or Shows)
+            section (str) : Section of the album (Animes, Audios, Games, Movies, Music or Shows)
             album (str) : Name of the album
         """
         await ctx.trigger_typing()

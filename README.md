@@ -43,7 +43,8 @@ List of bot commands with `!` prefix
 
 ### PleX Server group commands
 
-| Subcommand | Description                 | Usage                             | Example               |
-| ---------- | --------------------------- | --------------------------------- | --------------------- |
-| list       | List album names by section | !plex list \<section\> [page]     | !plex list Games 5    |
-| info       | Consult album info          | !plex info \<section\> \<album\>  | !plex info Games Abzû |
+| Subcommand | Description                 | Usage                                | Example                   |
+| ---------- | --------------------------- | ------------------------------------ | ------------------------- |
+| list       | List album names by section | !plex list \<section\> [page]        | !plex list Games 5        |
+| search     | Search album by keyword     | !plex search \<section\> \<keyword\> | !plex search Games Hitman |
+| info       | Consult album info          | !plex info \<section\> \<album\>     | !plex info Games Abzû     |
