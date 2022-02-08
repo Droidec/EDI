@@ -9,6 +9,7 @@ Its name and its personality is taken from the [Mass Effect](https://masseffect.
 - [discord.py](https://discordpy.readthedocs.io/en/stable) >= 1.7.3 : API wrapper for Discord
 - [PyNaCl](https://pypi.org/project/PyNaCl/) >= 1.5.0 : Python binding for [libsodium](https://github.com/jedisct1/libsodium)
 - [plexapi](https://pypi.org/project/PlexAPI/) >= 4.9.1 : API wrapper for PleX Servers
+- [colorthief](https://github.com/fengsp/color-thief-py) >= 0.2.1 : A Python module for grabbing the color palette from an image
 - [ffmpeg](https://www.ffmpeg.org/) : Collection of audio and video decoders/encoders
 
 ## Usage

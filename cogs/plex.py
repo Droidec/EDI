@@ -32,6 +32,7 @@ EDI PleX Server commands and listeners
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from datetime import datetime as dt
+from colorthief import ColorThief
 from discord.ext import commands
 import discord
 import plexapi
@@ -181,6 +182,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         try:
             cover = [name for name in os.listdir(thumb_path) if 'Cover' in name][0]
             thumb_path = f'{thumb_path}/{cover}'
+            color = ColorThief(thumb_path).get_color(quality=7)
         except IndexError:
             cover = None
 
@@ -188,7 +190,10 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
             thumb = discord.File(thumb_path)
 
         # Build Discord embed
-        embed = discord.Embed(title=a.title, description=a.artist().title, color=discord.Color.blue())
+        if thumb is not None:
+            embed = discord.Embed(title=a.title, description=a.artist().title, color=discord.Color.from_rgb(*color))
+        else:
+            embed = discord.Embed(title=a.title, description=a.artist().title)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         if thumb is not None:
             embed.set_thumbnail(url=f'attachment://{cover}')
