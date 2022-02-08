@@ -42,10 +42,20 @@ NB_RESULTS_PER_PAGE = 20
 Sections = {
     'animes' : 'Animes Music',
     'audios' : 'Audio Series',
-    'games' : 'Games Music',
+    'games'  : 'Games Music',
     'movies' : 'Movies Music',
-    'music' : 'Music',
-    'shows' : 'TV Shows Music',
+    'music'  : 'Music',
+    'shows'  : 'TV Shows Music',
+}
+
+# Possible partitions
+Partitions = {
+    'animes' : 'U:',
+    'audios' : 'V:',
+    'games'  : 'W:',
+    'movies' : 'X:',
+    'music'  : 'Y:',
+    'shows'  : 'Z:',
 }
 
 class CogPlexServer(commands.Cog, name='PleX Server'):
@@ -106,7 +116,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         await ctx.send(embed=embed)
 
     @plex.command(name='info')
-    async def info(self, ctx, section: str, album: str)
+    async def info(self, ctx, section: str, album: str):
         """Get album info
 
         Parameters
@@ -123,8 +133,14 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
             return await ctx.send("Invalid session...")
 
         try:
-            a = s.get(album)
+            a = s.search(title=album, libtype='album', limit=1)
         except plexapi.exceptions.NotFound:
-            return await ctx.send("Invalid album...")
+            return await ctx.send("Could not find album...")
 
-        await ctx.send("Work in progress...")
+        # Build Discord embed
+        embed = discord.Embed(title=a.title, description=a.artist().title, color=discord.Color.blue())
+        embed.set_author(name=ctx.author.diplay_name, icon_url=ctx.author.avatar_url)
+        embed.add_field(name='tracks', value='\n'.join(f"{track.index}. {track.title} [{track.duration}]" for track in a.tracks()))
+        embed.set_footer(text=f"Info requested by: {ctx.author.display_name}")
+
+        await ctx.send(embed=embed)
