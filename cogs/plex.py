@@ -34,6 +34,7 @@ EDI PleX Server commands and listeners
 from discord.ext import commands
 import discord
 import plexapi
+import os
 
 # Limit the number of results per search
 NB_RESULTS_PER_PAGE = 20
@@ -125,6 +126,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
             album (str) : Name of the album
         """
         await ctx.trigger_typing()
+        thumb = None
 
         # Check consistency
         try:
@@ -133,14 +135,22 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
             return await ctx.send("Invalid session...")
 
         try:
-            a = s.search(title=album, libtype='album', limit=1)
+            a = s.search(title=album, libtype='album', limit=1)[0]
         except plexapi.exceptions.NotFound:
             return await ctx.send("Could not find album...")
 
+        # Search thumbnail
+        location = tracks[0].media[0].parts[0].file
+        thumb_path = f"{Partitions[section.lower()]}/{os.path.dirname(location.split('/', 3)[3])}/Cover.jpg"
+        if os.path.isfile(thumb_path):
+            thumb = discord.File(thumb_path)
+
         # Build Discord embed
         embed = discord.Embed(title=a.title, description=a.artist().title, color=discord.Color.blue())
-        embed.set_author(name=ctx.author.diplay_name, icon_url=ctx.author.avatar_url)
-        embed.add_field(name='tracks', value='\n'.join(f"{track.index}. {track.title} [{track.duration}]" for track in a.tracks()))
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        if thumb is not None:
+            embed.set_thumbnail(url=f'attachment://{os.path.basename(thumb_path)}')
+        embed.add_field(name='Tracks', value='\n'.join(f"{track.index}. {track.title} [{track.duration}]" for track in a.tracks()))
         embed.set_footer(text=f"Info requested by: {ctx.author.display_name}")
 
-        await ctx.send(embed=embed)
+        await ctx.send(file=thumb, embed=embed)
