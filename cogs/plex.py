@@ -121,7 +121,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         await ctx.send(embed=embed)
 
     @plex.command(name='search')
-    async def search(self, ctx, section: str, keyword: str)
+    async def search(self, ctx, section: str, keyword: str):
         """ Search album by keyword
 
         Parameters
@@ -141,7 +141,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         results = [album.title for album in s.search(title=keyword, libtype='album', limit=20)]
 
         # Render result in Discord embed
-        embed = Discord.Embed(title='Results...', description='\n'.join(results))
+        embed = discord.Embed(title='Results...', description='\n'.join(results))
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         embed.set_footer(text=f"List requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
