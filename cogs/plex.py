@@ -33,6 +33,7 @@ EDI PleX Server commands and listeners
 
 from discord.ext import commands
 import discord
+import plexapi
 
 # Limit the number of results per search
 NB_RESULTS_PER_PAGE = 20
@@ -103,3 +104,27 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         embed.set_footer(text=f"List requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
+
+    @plex.command(name='info')
+    async def info(self, ctx, section: str, album: str)
+        """Get album info
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            section (str) : Section to list (Animes, Audios, Games, Movies, Music or Shows)
+            album (str) : Name of the album
+        """
+        await ctx.trigger_typing()
+
+        # Check consistency
+        try:
+            s = self.bot.plex.library.section(Sections[section.lower()])
+        except KeyError:
+            return await ctx.send("Invalid session...")
+
+        try:
+            a = s.get(album)
+        except plexapi.exceptions.NotFound:
+            return await ctx.send("Invalid album...")
+
+        await ctx.send("Work in progress...")
