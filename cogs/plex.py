@@ -163,7 +163,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         embed = discord.Embed(title=a.title, description=a.artist().title, color=discord.Color.blue())
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         if thumb is not None:
-            embed.set_thumbnail(url=f'attachment://{cover)}')
+            embed.set_thumbnail(url=f'attachment://{cover}')
 
         while (NB_TRACKS_PER_EMBED_FIELD * ite) < nb_tracks:
             start = NB_TRACKS_PER_EMBED_FIELD * ite
