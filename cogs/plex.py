@@ -97,6 +97,8 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
         try:
             page = int(page)
+            if page <= 0:
+                raise ValueError
         except ValueError:
             return await ctx.send("Invalid page number...")
 
