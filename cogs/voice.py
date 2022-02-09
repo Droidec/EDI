@@ -227,7 +227,7 @@ class CogVoice(commands.Cog, name='Voice'):
             fmt = '\n'.join(f"{index + 1}. {track.data.title} | Requested by: {track.requester}" for index, track in enumerate(tracks))
             fmt = fmt + f"**\n{player.queue.qsize()} tracks in the queue**"
 
-        embed = discord.Embed(title="", description=fmt, color=discord.Color.blue())
+        embed = discord.Embed(title="Queue", description=fmt, color=discord.Color.blue())
         embed.set_footer(text=f"Queue requested by: {ctx.author.display_name}")
         return await ctx.send(embed=embed)
 

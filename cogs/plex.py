@@ -92,7 +92,7 @@ class PlexSource(discord.PCMVolumeTransformer):
         if not os.path.isfile(path):
             return await ctx.send("There was an error instantiating your song...")
 
-        return cls(discord.FFmpegPCMAudio(path), data=track, requester=ctx.author)
+        return cls(discord.FFmpegPCMAudio(path), data=track, requester=ctx.author.display_name)
 
 class CogPlexServer(commands.Cog, name='PleX Server'):
     """All PleX Server commands and listeners
