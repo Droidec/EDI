@@ -31,10 +31,73 @@ EDI voice commands and listeners
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from async_timeout import timeout
 from discord.ext import commands
+from .plex import PlexSource
 import discord
-import logging
+import asyncio
 import os
+
+class MusicPlayer:
+    """A music player which implements a queue and a loop for each guild.
+    When the bot is disconnected from voice channel, the player is destroyed
+
+    Attributes
+        ctx (commands.Context) : Invocation context
+    """
+    def __init__(self, ctx):
+        """MusicPlayer init"""
+        self.bot = ctx.bot
+        self.cog = ctx.cog
+        self.guild = ctx.guild
+        self.channel = ctx.channel
+
+        self.queue = asyncio.Queue()
+        self.next = asyncio.Event()
+
+        self.np = None # Now playing message
+        self.current = None # Current song played
+
+        ctx.bot.loop.create_task(self.player_loop())
+
+    async def player_loop(self):
+        """Main player loop"""
+        await self.bot.wait_until_ready()
+
+        while not self.bot.is_closed():
+            self.next.clear()
+
+            # Wait for the next song
+            # If we timeout, cancel the player and disconnect...
+            try:
+                async with timeout(60): # 1 min...
+                    source = await self.queue.get()
+            except asyncio.TimeoutError:
+                return self.destroy(self.guild)
+
+            # Check consistency
+            if not isinstance(source, PlexSource):
+                await self.channel.send("There was an error processing your song...")
+                continue
+
+            # Play song
+            self.current = source
+            self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
+            embed = discord.Embed(title="Now playing", description="TODO", color=discord.Color.green())
+            self.np = await channel.send(embed=embed)
+            await self.next.wait()
+
+            # Prepare for next song
+            source.cleanup()
+            self.current = None
+
+    async def destroy(self, guild):
+        """Disconnect and cleanup the player
+
+        Parameters
+            guild (discord.Guild) : Guild of the player to destroy
+        """
+        return self.bot.loop.create_task(self.cog._cleanup(guild))
 
 class VoiceContextError(commands.CommandError):
     """Custom Exception class for voice context error"""
@@ -48,6 +111,37 @@ class CogVoice(commands.Cog, name='Voice'):
     def __init__(self, bot):
         """CogVoice init"""
         self.bot = bot
+        self.players = {}
+
+    async def cleanup(self, guild):
+        """Disconnect and cleanup the player of a guild
+
+        Parameters
+            guild (discord.Guild) : Guild of the player to destroy
+        """
+        try:
+            await guild.voice_client.disconnect()
+        except AttributeError:
+            pass
+
+        try:
+            del self.players[guild.id]
+        except KeyError:
+            pass
+
+    def get_player(self, ctx):
+        """Retrieve the guild player, or create one
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        try:
+            player = self.players[ctx.guild.id]
+        except KeyError:
+            player = MusicPlayer(ctx)
+            self.players[ctx.guild.id] = player
+
+        return player
 
     @commands.command(name='join')
     async def join(self, ctx, *channel):
@@ -84,27 +178,15 @@ class CogVoice(commands.Cog, name='Voice'):
 
         await ch.connect()
 
-    @commands.command(name='play')
-    async def play(self, ctx, *, path: str):
-        """Play audio from local filesystem
+    @commands.command(name='np')
+    async def now_playing(self, ctx):
+        """Show the current song played
 
         Parameters
             ctx (commands.Context) : Invocation context
-            path (str) : Path of the file to play
         """
-        if not os.path.isfile(path):
-            return await ctx.send("Specified path is not an existing regular file...")
-
-        if not ctx.voice_client:
-            await ctx.invoke(self.join)
-
-        if ctx.voice_client.is_playing():
-            return
-
-        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(path))
-        ctx.voice_client.play(source, after=lambda e: logging.error(f"Player error: {e}") if e else None)
-
-        await ctx.send(f"Now playing: `{path}`")
+        vc = ctx.voice_client
+        await ctx.send(f"[{vc.source.data.title}]({vc.source.requester.mention})")
 
     @commands.command(name='pause')
     async def pause(self, ctx):
@@ -143,7 +225,7 @@ class CogVoice(commands.Cog, name='Voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        return await ctx.voice_client.disconnect()
+        return await self._cleanup(ctx.guild)
 
     @leave.before_invoke
     async def ensure_voice(self, ctx):
@@ -154,8 +236,9 @@ class CogVoice(commands.Cog, name='Voice'):
         """
         if ctx.voice_client is None:
             await ctx.send("Not currently in a voice channel...")
-            raise VoiceContextError("Not in a voice channel")
+            raise VoiceContextError("Not currently in a voice channel...")
 
+    @now_playing.before_invoke
     @pause.before_invoke
     @resume.before_invoke
     @stop.before_invoke
@@ -167,7 +250,7 @@ class CogVoice(commands.Cog, name='Voice'):
         """
         if ctx.voice_client is None:
             await ctx.send("Not currently in a voice channel...")
-            raise VoiceContextError("Not in a voice channel")
+            raise VoiceContextError("Not currently in a voice channel...")
         elif not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
             await ctx.send("Not currently playing anything...")
-            raise VoiceContextError("Not currently playing")
+            raise VoiceContextError("Not currently playing anything...")

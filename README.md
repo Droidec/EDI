@@ -5,7 +5,8 @@ Its name and its personality is taken from the [Mass Effect](https://masseffect.
 
 ## Dependencies
 
-- [python3](https://www.python.org/) >= 3.6 : Use python3 instead of python2
+- [python3](https://www.python.org/) >= 3.9 : Use python3 instead of python2
+- [async-timeout](https://pypi.org/project/async-timeout/) >= 3.0.1 : Asyncio-compatible timeout context manager
 - [discord.py](https://discordpy.readthedocs.io/en/stable) >= 1.7.3 : API wrapper for Discord
 - [PyNaCl](https://pypi.org/project/PyNaCl/) >= 1.5.0 : Python binding for [libsodium](https://github.com/jedisct1/libsodium)
 - [plexapi](https://pypi.org/project/PlexAPI/) >= 4.9.1 : API wrapper for PleX Servers

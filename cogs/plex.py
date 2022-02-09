@@ -64,6 +64,36 @@ Partitions = {
     'shows'  : 'Z:',
 }
 
+class PlexSource(discord.PCMVolumeTransformer):
+    """Represents a PleX audio source
+
+    Attributes
+        source (discord.FFmpegPCMAudio) : Audio source
+        data (plexapi.audio.track) : Audio data
+        requester (discord.User|discord.Member) : Requester
+    """
+    def __init__(self, source, *, data, requester):
+        """PlexSource init"""
+        super().__init__(source)
+        self.data = data
+        self.requester = requester
+
+    @classmethod
+    async def create_source(cls, ctx, section: str, track):
+        """Create a Plex audio source
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            section (str) : Section of the album (Animes, Audios, Games, Movies, Music or Shows)
+            track (plexapi.audio.track) : Audio track
+        """
+        location = track.media[0].parts[0].file
+        path = f"{Partitions[section.lower()]}/{location.split('/', 3)[3]}"
+        if not os.path.isfile(path):
+            return await ctx.send("There was an error instantiating your song...")
+
+        return cls(discord.FFmpegPCMAudio(path), data=track, requester=ctx.author)
+
 class CogPlexServer(commands.Cog, name='PleX Server'):
     """All PleX Server commands and listeners
 
@@ -138,7 +168,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         try:
             s = self.bot.plex.library.section(Sections[section.lower()])
         except KeyError:
-            return await ctx.send("Invalid session...")
+            return await ctx.send("Invalid section...")
 
         # Search by keyword
         results = [album.title for album in s.search(title=keyword, libtype='album', limit=20)]
@@ -168,7 +198,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         try:
             s = self.bot.plex.library.section(Sections[section.lower()])
         except KeyError:
-            return await ctx.send("Invalid session...")
+            return await ctx.send("Invalid section...")
 
         try:
             a = s.search(title=album, libtype='album', limit=1)[0]
@@ -210,3 +240,40 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         embed.set_footer(text=f"Info requested by: {ctx.author.display_name}")
 
         await ctx.send(file=thumb, embed=embed)
+
+    @plex.command(name='play')
+    async def play(self, ctx, section: str, album: str):
+        """Play album
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            section (str) : Section of the album (Animes, Audios, Games, Movies, Music or Shows)
+            album (str) : Name of the album
+        """
+        await ctx.trigger_typing()
+
+        # Check consistency
+        try:
+            s = self.bot.plex.library.section(Sections[section.lower()])
+        except KeyError:
+            return await ctx.send("Invalid section...")
+
+        try:
+            a = s.search(title=album, libtype='album', limit=1)[0]
+        except (plexapi.exceptions.NotFound, IndexError):
+            return await ctx.send("Could not find album...")
+
+        # Join voice channel
+        voice = self.bot.get_cog('Voice')
+
+        if not ctx.voice_client:
+            await voice.invoke(voice.join)
+
+        player = voice.get_player(ctx)
+
+        # Add tracks to music player queue
+        for track in a.tracks():
+            source = await PlexSource.create_source(ctx, section, track)
+            await player.queue.put(source)
+
+        await ctx.send("Queued {a.title}")
