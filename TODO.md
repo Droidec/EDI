@@ -14,3 +14,4 @@ N.B. For `section`, map user section with real section name (to avoid spaces)
     - volume : to manage volume
     - clear : clear the queue but continue to play
     - remove : To remove a track at a specific position in the queue
+- Fix warning that appear after 1 minute of inactivity in a voice channel

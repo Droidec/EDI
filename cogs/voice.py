@@ -223,11 +223,11 @@ class CogVoice(commands.Cog, name='Voice'):
             fmt = "*There is nothing in the queue...*"
         else:
             nb_tracks = player.queue.qsize()
-            tracks = list(itertools.islice(player.queue, 0, nb_tracks))
+            tracks = list(itertools.islice(player.queue._queue, 0, nb_tracks))
             fmt = '\n'.join(f"{index + 1}. {track.data.title} | Requested by: {track.requester}" for index, track in enumerate(tracks))
+            fmt = fmt + f"**\n{player.queue.qsize()} tracks in the queue**"
 
-        embed = discord.Embed(title="", description=f"{player.queue.qsize()} tracks", color=discord.Color.blue())
-        embed.add_field(name="Queue", value=fmt, inline=False)
+        embed = discord.Embed(title="", description=fmt, color=discord.Color.blue())
         embed.set_footer(text=f"Queue requested by: {ctx.author.display_name}")
         return await ctx.send(embed=embed)
 
