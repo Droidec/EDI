@@ -276,4 +276,4 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
             source = await PlexSource.create_source(ctx, section, track)
             await player.queue.put(source)
 
-        await ctx.send("Queued {a.title}")
+        await ctx.send(f"Queued {a.title}")

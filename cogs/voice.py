@@ -113,7 +113,7 @@ class CogVoice(commands.Cog, name='Voice'):
         self.bot = bot
         self.players = {}
 
-    async def cleanup(self, guild):
+    async def _cleanup(self, guild):
         """Disconnect and cleanup the player of a guild
 
         Parameters
