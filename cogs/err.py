@@ -67,7 +67,7 @@ class CogErrHandler(commands.Cog, name='Err'):
         elif isinstance(err, (VoiceChannelMissing, VoiceChannelNotFound, VoiceChannelInvalid, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying)):
             msg = err
         else:
-            msg = f"Congratulations, you've raised an unknown exception {ctx.author.mention}"
+            msg = f"Congratulations, you've raised an exception {ctx.author.mention}"
             logging.error(f"=> `{ctx.message.content}` from `{ctx.author.display_name}` raised an exception:")
             logging.error(''.join(traceback.format_exception(type(err), err, err.__traceback__)))
 

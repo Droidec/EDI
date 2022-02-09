@@ -72,11 +72,20 @@ class PlexSource(discord.PCMVolumeTransformer):
         data (plexapi.audio.track) : Audio data
         requester (discord.User|discord.Member) : Requester
     """
-    def __init__(self, source, *, data, requester):
+    def __init__(self, source, *, title, duration, requester):
         """PlexSource init"""
         super().__init__(source)
-        self.data = data
+        self.title = title
+        self.duration = self.get_track_duration(duration)
         self.requester = requester
+
+    def get_track_duration(duration):
+    """Calculates track duration in %M:%S format
+
+    Parameters
+        duration (int) : Duration of the track in ms
+    """
+    return dt.fromtimestamp(duration/1000.0).strftime('%M:%S')
 
     @classmethod
     async def create_source(cls, ctx, section: str, track):
@@ -92,7 +101,7 @@ class PlexSource(discord.PCMVolumeTransformer):
         if not os.path.isfile(path):
             return await ctx.send("There was an error instantiating your song...")
 
-        return cls(discord.FFmpegPCMAudio(path), data=track, requester=ctx.author.display_name)
+        return cls(discord.FFmpegPCMAudio(path), title=track.title, duration=track.duration, requester=ctx.author.display_name)
 
 class CogPlexServer(commands.Cog, name='PleX Server'):
     """All PleX Server commands and listeners
@@ -233,7 +242,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         while (NB_TRACKS_PER_EMBED_FIELD * ite) < nb_tracks:
             start = NB_TRACKS_PER_EMBED_FIELD * ite
             end = NB_TRACKS_PER_EMBED_FIELD * (ite + 1)
-            value = '\n'.join(f"{track.index}. {track.title} [{dt.fromtimestamp(track.duration/1000.0).strftime('%M:%S')}]" for track in tracks[start:end])
+            value = '\n'.join(f"{track.index}. {track.title} [{get_track_duration(track.duration)}]" for track in tracks[start:end])
             embed.add_field(name=f'{start+1} - {min(nb_tracks, end)}', value=value, inline=False)
             ite += 1
 

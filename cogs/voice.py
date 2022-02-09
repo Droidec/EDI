@@ -83,7 +83,7 @@ class VoicePlayer:
             # Play track
             self.current = source
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-            embed = discord.Embed(title="Now playing", description=f"{source.data.title}", color=discord.Color.green())
+            embed = discord.Embed(title="Now playing", description=f"{source.title}", color=discord.Color.green())
             await self.channel.send(embed=embed)
             await self.next.wait()
 
@@ -208,7 +208,7 @@ class CogVoice(commands.Cog, name='Voice'):
             ctx (commands.Context) : Invocation context
         """
         vc = ctx.voice_client
-        await ctx.send(f"[{vc.source.data.title}]({vc.source.requester.mention})")
+        await ctx.send(f"[{vc.source.title}]({vc.source.requester})")
 
     @commands.command(name='queue')
     async def queue_info(self, ctx):
@@ -224,7 +224,7 @@ class CogVoice(commands.Cog, name='Voice'):
         else:
             nb_tracks = player.queue.qsize()
             tracks = list(itertools.islice(player.queue._queue, 0, nb_tracks))
-            fmt = '\n'.join(f"{index + 1}. {track.data.title} | Requested by: {track.requester}" for index, track in enumerate(tracks))
+            fmt = '\n'.join(f"{index + 1}. {track.title} [{get_track_duration(track.duration)}] ({track.requester})" for index, track in enumerate(tracks))
             fmt = fmt + f"**\n{player.queue.qsize()} tracks in the queue**"
 
         embed = discord.Embed(title="Queue", description=fmt, color=discord.Color.blue())
