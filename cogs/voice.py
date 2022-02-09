@@ -76,13 +76,13 @@ class MusicPlayer:
 
             # Check consistency
             if not isinstance(source, PlexSource):
-                await self.channel.send("There was an error processing your song...")
+                await self.channel.send("Corrupted song detected. Skipped...")
                 continue
 
             # Play song
             self.current = source
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-            embed = discord.Embed(title="Now playing", description="TODO", color=discord.Color.green())
+            embed = discord.Embed(title="Now playing", description=f"{source.data.title}", color=discord.Color.green())
             await self.channel.send(embed=embed)
             await self.next.wait()
 
@@ -228,7 +228,6 @@ class CogVoice(commands.Cog, name='Voice'):
            ctx (commands.Context) : Invocation context
         """
         ctx.voice_client.stop()
-        await ctx.send("Song skipped...")
 
     @commands.command(name='stop')
     async def stop(self, ctx):

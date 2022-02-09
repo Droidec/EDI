@@ -9,3 +9,4 @@
     - !plex play [section] [album] : Play album tracks
 N.B. For `section`, map user section with real section name (to avoid spaces)
 - Test if bot.plex is None in `plex` command to deactivate subcommands if plexapi is not installed/initialized ?
+- Implement a `loop` command to repeat current song indefinitely
