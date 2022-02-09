@@ -69,7 +69,8 @@ class PlexSource(discord.PCMVolumeTransformer):
 
     Attributes
         source (discord.FFmpegPCMAudio) : Audio source
-        data (plexapi.audio.track) : Audio data
+        title (str) : Audio title
+        duration (int) : Audio duration in ms
         requester (discord.User|discord.Member) : Requester
     """
     def __init__(self, source, *, title, duration, requester):
@@ -79,13 +80,13 @@ class PlexSource(discord.PCMVolumeTransformer):
         self.duration = self.get_track_duration(duration)
         self.requester = requester
 
-    def get_track_duration(duration):
-    """Calculates track duration in %M:%S format
+    def get_track_duration(self, duration):
+        """Calculates track duration in %M:%S format
 
-    Parameters
-        duration (int) : Duration of the track in ms
-    """
-    return dt.fromtimestamp(duration/1000.0).strftime('%M:%S')
+        Parameters
+            duration (int) : Duration of the track in ms
+        """
+        return dt.fromtimestamp(duration/1000.0).strftime('%M:%S')
 
     @classmethod
     async def create_source(cls, ctx, section: str, track):

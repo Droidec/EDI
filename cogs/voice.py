@@ -224,10 +224,9 @@ class CogVoice(commands.Cog, name='Voice'):
         else:
             nb_tracks = player.queue.qsize()
             tracks = list(itertools.islice(player.queue._queue, 0, nb_tracks))
-            fmt = '\n'.join(f"{index + 1}. {track.title} [{get_track_duration(track.duration)}] ({track.requester})" for index, track in enumerate(tracks))
-            fmt = fmt + f"**\n{player.queue.qsize()} tracks in the queue**"
+            fmt = '\n'.join(f"{index + 1}. {track.title} [{track.duration}] ({track.requester})" for index, track in enumerate(tracks))
 
-        embed = discord.Embed(title="Queue", description=fmt, color=discord.Color.blue())
+        embed = discord.Embed(title="Player queue", description=fmt, color=discord.Color.blue())
         embed.set_footer(text=f"Queue requested by: {ctx.author.display_name}")
         return await ctx.send(embed=embed)
 
@@ -238,8 +237,11 @@ class CogVoice(commands.Cog, name='Voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
+        if ctx.voice_client.is_paused():
+            return
+
         ctx.voice_client.pause()
-        embed = discord.Embed(title="Player has been paused", color=discord.Color.yellow())
+        embed = discord.Embed(title="Player info", description="Player has been paused" color=discord.Color.blue())
         await ctx.send(embed=embed)
 
     @commands.command(name='resume')
@@ -249,8 +251,11 @@ class CogVoice(commands.Cog, name='Voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
+        if ctx.voice_client.is_playing():
+            return
+
         ctx.voice_client.resume()
-        embed = discord.Embed(title="Player has been resumed", color=discord.Color.green())
+        embed = discord.Embed(title="Player info", description="Player has been resumed" color=discord.Color.blue())
         await ctx.send(embed=embed)
 
     @commands.command(name='skip')
@@ -278,7 +283,8 @@ class CogVoice(commands.Cog, name='Voice'):
 
         # Stop current track
         ctx.voice_client.stop()
-        await ctx.send("Player stopped...")
+        embed = discord.Embed(title="Player info", description="Queue has been cleared and player has been stopped" color=discord.Color.blue())
+        await ctx.send(embed=embed)
 
     @commands.command(name='leave')
     async def leave(self, ctx):
