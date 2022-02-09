@@ -49,7 +49,7 @@ List of bot commands with `!` prefix
 
 ### Plex Server group commands
 
-`EDI` can search/play tracks on my Plex Server
+`EDI` can search/play tracks on my Plex Server with the `plex` command
 
 | Subcommand | Description                   | Usage                                | Example                   |
 | ---------- | ----------------------------- | ------------------------------------ | ------------------------- |
