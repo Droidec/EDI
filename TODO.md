@@ -13,3 +13,4 @@ N.B. For `section`, map user section with real section name (to avoid spaces)
     - loop : To loop on a track
     - volume : to manage volume
     - clear : clear the queue but continue to play
+    - remove : To remove a track at a specific position in the queue

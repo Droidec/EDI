@@ -34,6 +34,7 @@ EDI voice commands and listeners
 from async_timeout import timeout
 from discord.ext import commands
 from .plex import PlexSource
+import itertools
 import discord
 import asyncio
 import os
@@ -217,7 +218,17 @@ class CogVoice(commands.Cog, name='Voice'):
             ctx (commands.Context) : Invocation context
         """
         player = self.get_player(ctx)
-        embed = discord.Embed(title=f"There is {player.queue.qsize()} tracks in the queue", color=discord.Color.green())
+
+        if player.queue.empty():
+            fmt = "*There is nothing in the queue...*"
+        else:
+            nb_tracks = player.queue.qsize()
+            tracks = list(itertools.islice(player.queue, 0, nb_tracks))
+            fmt = '\n'.join(f"{index + 1}. {track.data.title} | Requested by: {track.requester}" for index, track in enumerate(tracks))
+
+        embed = discord.Embed(title="", description=f"{player.queue.qsize()} tracks", color=discord.Color.blue())
+        embed.add_field(name="Queue", value=fmt, inline=False)
+        embed.set_footer(text=f"Queue requested by: {ctx.author.display_name}")
         return await ctx.send(embed=embed)
 
     @commands.command(name='pause')
