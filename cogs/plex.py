@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EDI PleX Server commands and listeners
+EDI Plex Server commands and listeners
 """
 #
 # Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
@@ -38,10 +38,10 @@ import discord
 import plexapi
 import os
 
-# Limit the number of results per search
+# Limits the number of results per search
 NB_RESULTS_PER_PAGE = 20
 
-# Limit the number of tracks per embed field
+# Limits the number of tracks per embed field
 NB_TRACKS_PER_EMBED_FIELD = 20
 
 # Possible sections
@@ -65,7 +65,7 @@ Partitions = {
 }
 
 class PlexSource(discord.PCMVolumeTransformer):
-    """Represents a PleX audio source
+    """Represents a Plex audio source
 
     Attributes
         source (discord.FFmpegPCMAudio) : Audio source
@@ -104,8 +104,8 @@ class PlexSource(discord.PCMVolumeTransformer):
 
         return cls(discord.FFmpegPCMAudio(path), title=track.title, duration=track.duration, requester=ctx.author.display_name)
 
-class CogPlexServer(commands.Cog, name='PleX Server'):
-    """All PleX Server commands and listeners
+class CogPlexServer(commands.Cog, name='Plex Server'):
+    """All Plex Server commands and listeners
 
     Attributes
         See commands.Cog
@@ -116,13 +116,13 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
     @commands.group(name='plex')
     async def plex(self, ctx):
-        """Invoke PleX Server commands"""
+        """Invokes Plex Server commands"""
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid plex command passed...")
 
     @plex.command(name='list')
     async def list(self, ctx, section: str, page: str=None):
-        """Consult album names by section
+        """Lists album names by section
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -142,7 +142,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         except ValueError:
             return await ctx.send("Invalid page number...")
 
-        # Query PleX results
+        # Query Plex results
         try:
             s = self.bot.plex.library.section(Sections[section.lower()])
         except KeyError:
@@ -165,7 +165,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
     @plex.command(name='search')
     async def search(self, ctx, section: str, keyword: str):
-        """ Search album by keyword
+        """ Searches album by keyword
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -193,7 +193,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
     @plex.command(name='info')
     async def info(self, ctx, section: str, album: str):
-        """Get album info
+        """Consults album info
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -231,7 +231,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         if cover is not None and os.path.isfile(thumb_path):
             thumb = discord.File(thumb_path)
 
-        # Build Discord embed
+        # Render result in Discord embed
         if thumb is not None:
             embed = discord.Embed(title=a.title, description=a.artist().title, color=discord.Color.from_rgb(*color))
         else:
@@ -253,7 +253,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
     @plex.command(name='play')
     async def play(self, ctx, section: str, album: str):
-        """Play album or add it to the queue
+        """Add album to the player queue
 
         Parameters
             ctx (commands.Context) : Invocation context

@@ -59,7 +59,7 @@ class CogBasic(commands.Cog, name='Basic'):
 
     @commands.command(name='hello', aliases=['hey'])
     async def greet(self, ctx):
-        """Mention and greet user
+        """Mentions and greets user
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -68,7 +68,7 @@ class CogBasic(commands.Cog, name='Basic'):
 
     @commands.command(name='roll', aliases=['dice'])
     async def roll(self, ctx, *expr):
-        """Roll some dice (1d6, 2d12, ...) and sum the result
+        """Rolls some dice (1d6, 2d12, ...) and sum the result
 
         Parameters
             ctx (commands.Context) : Invocation context

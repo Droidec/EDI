@@ -50,11 +50,11 @@ class EDI(commands.Bot):
         self.plex = None
 
     def init_plex(self, base_url, token):
-        """Initialize PleX context
+        """Initialize Plex context
 
         Parameters
-            base_url (str) : Base URL of the PleX server to connect to
-            token (str) : PleX account token
+            base_url (str) : Base URL of the Plex server to connect to
+            token (str) : Plex account token
         """
         self.plex = PlexServer(base_url, token)
 
@@ -68,8 +68,8 @@ if __name__ == "__main__":
 
     # Parse arguments
     parser = ArgumentParser(description="EDI discord bot", formatter_class=RawTextHelpFormatter)
-    parser.add_argument('plex_base_url', help="Base URL of the PleX server to connect to")
-    parser.add_argument('plex_token', help="PleX account token")
+    parser.add_argument('plex_base_url', help="Base URL of the Plex server to connect to")
+    parser.add_argument('plex_token', help="Plex account token")
     parser.add_argument('discord_token', help="Discord bot token")
     args = parser.parse_args()
 
