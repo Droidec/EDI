@@ -267,7 +267,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
         voice = self.bot.get_cog('Voice')
 
         if not ctx.voice_client:
-            await voice.invoke(voice.join)
+            await ctx.invoke(voice.join)
 
         player = voice.get_player(ctx)
 

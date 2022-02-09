@@ -188,6 +188,19 @@ class CogVoice(commands.Cog, name='Voice'):
         vc = ctx.voice_client
         await ctx.send(f"[{vc.source.data.title}]({vc.source.requester.mention})")
 
+    @commands.command(name='queue')
+    async def queue_info(self, ctx):
+        """Show the player queue
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        player = get_player(ctx)
+        if player.queue.empty():
+            return await ctx.send("Queue is empty...")
+
+        return await ctx.send(f"{player.queue.qsize()} tracks in the queue")
+
     @commands.command(name='pause')
     async def pause(self, ctx):
         """Pause audio
@@ -227,6 +240,7 @@ class CogVoice(commands.Cog, name='Voice'):
         """
         return await self._cleanup(ctx.guild)
 
+    @queue_info.before_invoke
     @leave.before_invoke
     async def ensure_voice(self, ctx):
         """Ensure that EDI is in a voice channel
