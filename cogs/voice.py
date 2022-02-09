@@ -55,7 +55,6 @@ class MusicPlayer:
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
 
-        self.np = None # Now playing message
         self.current = None # Current song played
 
         ctx.bot.loop.create_task(self.player_loop())
@@ -84,7 +83,7 @@ class MusicPlayer:
             self.current = source
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
             embed = discord.Embed(title="Now playing", description="TODO", color=discord.Color.green())
-            self.np = await self.channel.send(embed=embed)
+            await self.channel.send(embed=embed)
             await self.next.wait()
 
             # Prepare for next song
@@ -221,13 +220,31 @@ class CogVoice(commands.Cog, name='Voice'):
         ctx.voice_client.resume()
         await ctx.send("Player resumed...")
 
-    @commands.command(name='stop')
-    async def stop(self, ctx):
-        """Stop audio
+    @commands.command(name='skip')
+    async def skip(self, ctx):
+        """Skip current song
 
         Parameters
            ctx (commands.Context) : Invocation context
         """
+        ctx.voice_client.stop()
+        await ctx.send("Song skipped...")
+
+    @commands.command(name='stop')
+    async def stop(self, ctx):
+        """Clear the queue and stop audio
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        player = self.get_player(ctx)
+
+        # Clear the queue
+        for _ in range(player.queue.qsize()):
+            player.queue.get_nowait()
+            player.queue.task_done()
+
+        # Stop current song
         ctx.voice_client.stop()
         await ctx.send("Player stopped...")
 
@@ -255,6 +272,7 @@ class CogVoice(commands.Cog, name='Voice'):
     @now_playing.before_invoke
     @pause.before_invoke
     @resume.before_invoke
+    @skip.before_invoke
     @stop.before_invoke
     async def ensure_play(self, ctx):
         """Ensure that EDI is in a voice channel and player is active
