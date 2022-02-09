@@ -32,7 +32,7 @@ EDI cog error handler
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from discord.ext import commands
-from .voice import VoiceContextError
+from .voice import VoiceNotConnected
 import traceback
 import logging
 
@@ -54,15 +54,21 @@ class CogErrHandler(commands.Cog, name='Err'):
             ctx (commands.Context) : Invocation context
             err (commands.CommandError) : Error that was raised
         """
-        if isinstance(err, VoiceContextError):
-            return
+        if isinstance(err, VoiceNotConnected):
+            msg = err.message
+        elif isinstance(err, commands.DisabledCommand):
+            msg = f"This command has been disabled {ctx.author.mention}"
         elif isinstance(err, commands.CommandNotFound):
-            msg = "Sorry, I do not know this command..."
+            msg = f"I do not know this command {ctx.author.mention}"
+        elif isinstance(err, commands.NoPrivateMessage):
+            msg = f"This command can not be used in Private Messages {ctx.author.mention}"
+        elif isinstance(err, commands.MissingPermissions):
+            msg = f"You're not allowed to do that {ctx.author.mention}"
         elif isinstance(err, commands.MissingRequiredArgument):
-            msg = "Sorry, an argument is missing for this command..."
+            msg = f"The argument `{err.param.name}` is missing for this command {ctx.author.mention}: "
         else:
-            msg = "Sorry, this command raised an exception..."
-            logging.error(f"Exception raised in command '{ctx.command}'")
+            msg = f"Congratulations, you've raised an unknown exception {ctx.author.mention}"
+            logging.error(f"=> `{ctx.message.content}` from `{ctx.author.display_name}` raised an exception:")
             logging.error(''.join(traceback.format_exception(type(err), err, err.__traceback__)))
 
         await ctx.send(msg)

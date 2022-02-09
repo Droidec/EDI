@@ -98,8 +98,8 @@ class MusicPlayer:
         """
         return self.bot.loop.create_task(self.cog._cleanup(guild))
 
-class VoiceContextError(commands.CommandError):
-    """Custom Exception class for voice context error"""
+class VoiceNotConnected(commands.CommandError):
+    """Custom Exception class for voice not connected"""
 
 class CogVoice(commands.Cog, name='Voice'):
     """All voice commands and listeners
@@ -265,8 +265,7 @@ class CogVoice(commands.Cog, name='Voice'):
             ctx (commands.Context) : Invocation context
         """
         if ctx.voice_client is None:
-            await ctx.send("Not currently in a voice channel...")
-            raise VoiceContextError("Not currently in a voice channel...")
+            raise VoiceNotConnected("I'm not currently in a voice channel {ctx.author.mention}")
 
     @now_playing.before_invoke
     @pause.before_invoke
@@ -281,7 +280,7 @@ class CogVoice(commands.Cog, name='Voice'):
         """
         if ctx.voice_client is None:
             await ctx.send("Not currently in a voice channel...")
-            raise VoiceContextError("Not currently in a voice channel...")
+            raise VoiceNotConnected("Not currently in a voice channel...")
         elif not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
             await ctx.send("Not currently playing anything...")
-            raise VoiceContextError("Not currently playing anything...")
+            raise VoiceNotConnected("Not currently playing anything...")
