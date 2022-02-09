@@ -84,7 +84,7 @@ class MusicPlayer:
             self.current = source
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
             embed = discord.Embed(title="Now playing", description="TODO", color=discord.Color.green())
-            self.np = await channel.send(embed=embed)
+            self.np = await self.channel.send(embed=embed)
             await self.next.wait()
 
             # Prepare for next song
@@ -195,7 +195,7 @@ class CogVoice(commands.Cog, name='Voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        player = get_player(ctx)
+        player = self.get_player(ctx)
         if player.queue.empty():
             return await ctx.send("Queue is empty...")
 
