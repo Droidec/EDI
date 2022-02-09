@@ -217,10 +217,8 @@ class CogVoice(commands.Cog, name='Voice'):
             ctx (commands.Context) : Invocation context
         """
         player = self.get_player(ctx)
-        if player.queue.empty():
-            return await ctx.send("Queue is empty...")
-
-        return await ctx.send(f"{player.queue.qsize()} tracks in the queue")
+        embed = discord.Embed(title=f"There is {player.queue.qsize()} tracks in the queue", color=discord.Color.green())
+        return await ctx.send(embed=embed)
 
     @commands.command(name='pause')
     async def pause(self, ctx):
