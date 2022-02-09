@@ -243,7 +243,7 @@ class CogPlexServer(commands.Cog, name='PleX Server'):
 
     @plex.command(name='play')
     async def play(self, ctx, section: str, album: str):
-        """Play album
+        """Play album or add it to the queue
 
         Parameters
             ctx (commands.Context) : Invocation context

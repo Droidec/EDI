@@ -38,15 +38,15 @@ import discord
 import asyncio
 import os
 
-class MusicPlayer:
-    """A music player which implements a queue and a loop for each guild.
+class VoicePlayer:
+    """A voice player which implements a queue and a loop for each guild.
     When the bot is disconnected from voice channel, the player is destroyed
 
     Attributes
         ctx (commands.Context) : Invocation context
     """
     def __init__(self, ctx):
-        """MusicPlayer init"""
+        """VoicePlayer init"""
         self.bot = ctx.bot
         self.cog = ctx.cog
         self.guild = ctx.guild
@@ -55,7 +55,7 @@ class MusicPlayer:
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
 
-        self.current = None # Current song played
+        self.current = None # Current track played
 
         ctx.bot.loop.create_task(self.player_loop())
 
@@ -136,7 +136,7 @@ class CogVoice(commands.Cog, name='Voice'):
         try:
             player = self.players[ctx.guild.id]
         except KeyError:
-            player = MusicPlayer(ctx)
+            player = VoicePlayer(ctx)
             self.players[ctx.guild.id] = player
 
         return player
@@ -182,8 +182,8 @@ class CogVoice(commands.Cog, name='Voice'):
         if ch is None:
             raise VoiceChannelNotFound(f"Channel not found on this server {ctx.author.mention}")
 
-        if isinstance(ch, discord.TextChannel):
-            VoiceChannelInvalid(f"I can not connect to a text channel {ctx.author.mention}")
+        if isinstance(ch, discord.channel.TextChannel):
+            raise VoiceChannelInvalid(f"I can not connect to a text channel {ctx.author.mention}")
 
         # Join voice channel
         if ctx.voice_client is not None:
@@ -196,13 +196,12 @@ class CogVoice(commands.Cog, name='Voice'):
             # Connect bot to a voice channel
             try:
                 await ch.connect()
-                await ctx.send(f"Connected to {ch}")
             except asyncio.TimeoutError:
                 raise VoiceConnectionError(f"Connecting to channel {ch} timed out...")
 
     @commands.command(name='np')
     async def now_playing(self, ctx):
-        """Show the current song played
+        """Shows the current track played
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -212,7 +211,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
     @commands.command(name='queue')
     async def queue_info(self, ctx):
-        """Show the player queue
+        """Shows the player queue
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -225,27 +224,29 @@ class CogVoice(commands.Cog, name='Voice'):
 
     @commands.command(name='pause')
     async def pause(self, ctx):
-        """Pause audio
+        """Pauses audio
 
         Parameters
             ctx (commands.Context) : Invocation context
         """
         ctx.voice_client.pause()
-        await ctx.send("Player paused...")
+        embed = discord.Embed(title="Player has been paused", color=discord.Color.yellow())
+        await ctx.send(embed=embed)
 
     @commands.command(name='resume')
     async def resume(self, ctx):
-        """Resume audio
+        """Resumes audio
 
         Parameters
             ctx (commands.Context) : Invocation context
         """
         ctx.voice_client.resume()
-        await ctx.send("Player resumed...")
+        embed = discord.Embed(title="Player has been resumed", color=discord.Color.green())
+        await ctx.send(embed=embed)
 
     @commands.command(name='skip')
     async def skip(self, ctx):
-        """Skip current song
+        """Skips to next track in the queue
 
         Parameters
            ctx (commands.Context) : Invocation context
@@ -254,7 +255,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
     @commands.command(name='stop')
     async def stop(self, ctx):
-        """Clear the queue and stop audio
+        """Clears the queue and stops audio
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -266,13 +267,13 @@ class CogVoice(commands.Cog, name='Voice'):
             player.queue.get_nowait()
             player.queue.task_done()
 
-        # Stop current song
+        # Stop current track
         ctx.voice_client.stop()
         await ctx.send("Player stopped...")
 
     @commands.command(name='leave')
     async def leave(self, ctx):
-        """Leave a voice channel
+        """Leaves voice channel
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -282,7 +283,7 @@ class CogVoice(commands.Cog, name='Voice'):
     @queue_info.before_invoke
     @leave.before_invoke
     async def ensure_voice(self, ctx):
-        """Ensure that EDI is in a voice channel
+        """Ensures that EDI is in a voice channel
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -296,12 +297,13 @@ class CogVoice(commands.Cog, name='Voice'):
     @skip.before_invoke
     @stop.before_invoke
     async def ensure_play(self, ctx):
-        """Ensure that EDI is in a voice channel and player is active
+        """Ensures that EDI is in a voice channel and player is active
 
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        if ctx.voice_client is None:
+        vc = ctx.voice_client
+        if vc is None:
             raise VoiceNotConnected(f"I'm not currently in a voice channel {ctx.author.mention}")
-        elif not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
+        elif not vc.is_playing() and not vc.is_paused():
             raise VoiceNotPlaying(f"I'm currently not playing anything {ctx.author.mention}")

@@ -34,14 +34,18 @@ List of bot commands with `!` prefix
 
 ### Voice commands
 
+`EDI` features a voice player to play audio from various sources
+
 | Command | Description                      | Usage           | Example                                  |
 | ------- | -------------------------------- | --------------- | ---------------------------------------- |
-| join    | Join a voice channel             | !join [channel] | !join General                            |
-| play    | Play audio from local filesystem | !play \<path\>  | !play C:\Users\derov\Downloads\input.mp3 |
-| pause   | Pause audio                      | !pause          |                                          |
-| resume  | Resume audio                     | !resume         |                                          |
-| stop    | Stop audio                       | !stop           |                                          |
-| leave   | Leave a voice channel            | !leave          |                                          |
+| join    | Joins a voice channel            | !join [channel] | !join General                            |
+| np      | Shows the current track played   | !np             |                                          |
+| queue   | Shows the player queue           | !queue          |                                          |
+| pause   | Pauses audio                     | !pause          |                                          |
+| resume  | Resumes audio                    | !resume         |                                          |
+| skip    | Skips to next track in the queue | !skip           |                                          |
+| stop    | Clears the queue and stops audio | !stop           |                                          |
+| leave   | Leaves voice channel             | !leave          |                                          |
 
 ### PleX Server group commands
 
