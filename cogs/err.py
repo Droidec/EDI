@@ -31,8 +31,8 @@ EDI cog error handler
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from .voice import VoiceChannelMissing, VoiceChannelNotFound, VoiceChannelInvalid, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying
 from discord.ext import commands
-from .voice import VoiceNotConnected
 import traceback
 import logging
 
@@ -54,9 +54,7 @@ class CogErrHandler(commands.Cog, name='Err'):
             ctx (commands.Context) : Invocation context
             err (commands.CommandError) : Error that was raised
         """
-        if isinstance(err, VoiceNotConnected):
-            msg = err.message
-        elif isinstance(err, commands.DisabledCommand):
+        if isinstance(err, commands.DisabledCommand):
             msg = f"This command has been disabled {ctx.author.mention}"
         elif isinstance(err, commands.CommandNotFound):
             msg = f"I do not know this command {ctx.author.mention}"
@@ -66,6 +64,8 @@ class CogErrHandler(commands.Cog, name='Err'):
             msg = f"You're not allowed to do that {ctx.author.mention}"
         elif isinstance(err, commands.MissingRequiredArgument):
             msg = f"The argument `{err.param.name}` is missing for this command {ctx.author.mention}: "
+        elif isinstance(err, (VoiceChannelMissing, VoiceChannelNotFound, VoiceChannelInvalid, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying)):
+            msg = err
         else:
             msg = f"Congratulations, you've raised an unknown exception {ctx.author.mention}"
             logging.error(f"=> `{ctx.message.content}` from `{ctx.author.display_name}` raised an exception:")

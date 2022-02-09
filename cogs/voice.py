@@ -66,7 +66,7 @@ class MusicPlayer:
         while not self.bot.is_closed():
             self.next.clear()
 
-            # Wait for the next song
+            # Wait for the next track
             # If we timeout, cancel the player and disconnect...
             try:
                 async with timeout(60): # 1 min...
@@ -76,30 +76,45 @@ class MusicPlayer:
 
             # Check consistency
             if not isinstance(source, PlexSource):
-                await self.channel.send("Corrupted song detected. Skipped...")
+                await self.channel.send("Unmanaged track detected. Skipping...")
                 continue
 
-            # Play song
+            # Play track
             self.current = source
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
             embed = discord.Embed(title="Now playing", description=f"{source.data.title}", color=discord.Color.green())
             await self.channel.send(embed=embed)
             await self.next.wait()
 
-            # Prepare for next song
+            # Prepare for next track
             source.cleanup()
             self.current = None
 
     async def destroy(self, guild):
-        """Disconnect and cleanup the player
+        """Disconnects and cleanup the player
 
         Parameters
             guild (discord.Guild) : Guild of the player to destroy
         """
-        return self.bot.loop.create_task(self.cog._cleanup(guild))
+        return self.bot.loop.create_task(self.cog.cleanup(guild))
+
+class VoiceChannelMissing(commands.CommandError):
+    """Custom Exception class for voice channel missing"""
+
+class VoiceChannelNotFound(commands.CommandError):
+    """Custom Exception class for voice channel not found"""
+
+class VoiceChannelInvalid(commands.CommandError):
+    """Custom Exception class for voice channel invalid"""
+
+class VoiceConnectionError(commands.CommandError):
+    """Custom Exception class for voice connection error"""
 
 class VoiceNotConnected(commands.CommandError):
     """Custom Exception class for voice not connected"""
+
+class VoiceNotPlaying(commands.CommandError):
+    """Custom Exception class for voice not playing"""
 
 class CogVoice(commands.Cog, name='Voice'):
     """All voice commands and listeners
@@ -112,8 +127,22 @@ class CogVoice(commands.Cog, name='Voice'):
         self.bot = bot
         self.players = {}
 
-    async def _cleanup(self, guild):
-        """Disconnect and cleanup the player of a guild
+    def get_player(self, ctx):
+        """Retrieves the guild player, or create one
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        try:
+            player = self.players[ctx.guild.id]
+        except KeyError:
+            player = MusicPlayer(ctx)
+            self.players[ctx.guild.id] = player
+
+        return player
+
+    async def cleanup(self, guild):
+        """Disconnects and cleanup the player of a guild
 
         Parameters
             guild (discord.Guild) : Guild of the player to destroy
@@ -128,23 +157,9 @@ class CogVoice(commands.Cog, name='Voice'):
         except KeyError:
             pass
 
-    def get_player(self, ctx):
-        """Retrieve the guild player, or create one
-
-        Parameters
-            ctx (commands.Context) : Invocation context
-        """
-        try:
-            player = self.players[ctx.guild.id]
-        except KeyError:
-            player = MusicPlayer(ctx)
-            self.players[ctx.guild.id] = player
-
-        return player
-
     @commands.command(name='join')
     async def join(self, ctx, *channel):
-        """Join a voice channel
+        """Joins a voice channel
         If a channel is specified, join that channel instead of user's channel
 
         Parameters
@@ -161,21 +176,29 @@ class CogVoice(commands.Cog, name='Voice'):
             try:
                 ch = ctx.author.voice.channel
             except AttributeError:
-                return await ctx.send("No channel specified and user is not in a channel...")
+                raise VoiceChannelMissing(f"No channel to join. Please either specify a valid channel or join one first {ctx.author.mention}")
 
         # Check consistency
         if ch is None:
-            return await ctx.send("Voice channel specified does not exist...")
+            raise VoiceChannelNotFound(f"Channel not found on this server {ctx.author.mention}")
 
         if isinstance(ch, discord.TextChannel):
-            return await ctx.send("Cannot connect to a text channel...")
+            VoiceChannelInvalid(f"I can not connect to a text channel {ctx.author.mention}")
 
         # Join voice channel
         if ctx.voice_client is not None:
             # Move bot if already in a voice channel
-            return await ctx.voice_client.move_to(ch)
-
-        await ch.connect()
+            try:
+                await ctx.voice_client.move_to(ch)
+            except asyncio.TimeoutError:
+                raise VoiceConnectionError(f"Moving to channel {ch} timed out...")
+        else:
+            # Connect bot to a voice channel
+            try:
+                await ch.connect()
+                await ctx.send(f"Connected to {ch}")
+            except asyncio.TimeoutError:
+                raise VoiceConnectionError(f"Connecting to channel {ch} timed out...")
 
     @commands.command(name='np')
     async def now_playing(self, ctx):
@@ -254,7 +277,7 @@ class CogVoice(commands.Cog, name='Voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        return await self._cleanup(ctx.guild)
+        return await self.cleanup(ctx.guild)
 
     @queue_info.before_invoke
     @leave.before_invoke
@@ -265,7 +288,7 @@ class CogVoice(commands.Cog, name='Voice'):
             ctx (commands.Context) : Invocation context
         """
         if ctx.voice_client is None:
-            raise VoiceNotConnected("I'm not currently in a voice channel {ctx.author.mention}")
+            raise VoiceNotConnected(f"I'm not currently in a voice channel {ctx.author.mention}")
 
     @now_playing.before_invoke
     @pause.before_invoke
@@ -279,8 +302,6 @@ class CogVoice(commands.Cog, name='Voice'):
             ctx (commands.Context) : Invocation context
         """
         if ctx.voice_client is None:
-            await ctx.send("Not currently in a voice channel...")
-            raise VoiceNotConnected("Not currently in a voice channel...")
+            raise VoiceNotConnected(f"I'm not currently in a voice channel {ctx.author.mention}")
         elif not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
-            await ctx.send("Not currently playing anything...")
-            raise VoiceNotConnected("Not currently playing anything...")
+            raise VoiceNotPlaying(f"I'm currently not playing anything {ctx.author.mention}")
