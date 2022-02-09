@@ -241,7 +241,7 @@ class CogVoice(commands.Cog, name='Voice'):
             return
 
         ctx.voice_client.pause()
-        embed = discord.Embed(title="Player info", description="Player has been paused" color=discord.Color.blue())
+        embed = discord.Embed(title="Player info", description="Player has been paused", color=discord.Color.blue())
         await ctx.send(embed=embed)
 
     @commands.command(name='resume')
@@ -255,7 +255,7 @@ class CogVoice(commands.Cog, name='Voice'):
             return
 
         ctx.voice_client.resume()
-        embed = discord.Embed(title="Player info", description="Player has been resumed" color=discord.Color.blue())
+        embed = discord.Embed(title="Player info", description="Player has been resumed", color=discord.Color.blue())
         await ctx.send(embed=embed)
 
     @commands.command(name='skip')
@@ -283,7 +283,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
         # Stop current track
         ctx.voice_client.stop()
-        embed = discord.Embed(title="Player info", description="Queue has been cleared and player has been stopped" color=discord.Color.blue())
+        embed = discord.Embed(title="Player info", description="Queue has been cleared and player has been stopped", color=discord.Color.blue())
         await ctx.send(embed=embed)
 
     @commands.command(name='leave')
