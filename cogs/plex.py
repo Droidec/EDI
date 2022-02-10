@@ -78,34 +78,6 @@ def format_duration(duration):
     """
     return dt.fromtimestamp(duration/1000.0).strftime('%M:%S')
 
-def get_path(section, album):
-    """Gets album path
-
-    Parameters
-        section (str) : Section of the album (must be valid)
-        album (plexapi.audio.Album) : Album to search from
-
-    Returns
-        Path to the album as a str
-    """
-    location = album.tracks()[0].media[0].parts[0].file
-    return Partitions[section.lower()] + '/' + os.path.dirname(location.split('/', 3)[3])
-
-def get_thumbnail(path):
-    """Gets album thumbnail path
-
-    Parameters
-        path (str) : Path to the album
-
-    Returns
-        Path to the album thumbnail as a str if found else None
-    """
-    try:
-        # We search a file named 'cover' in the album directory
-        return path + '/' + [name for name in os.listdir(path) if 'cover' in name.lower()][0]
-    except IndexError:
-        return None
-
 class PlexSource(discord.PCMVolumeTransformer):
     """Represents a Plex audio source
 
@@ -219,6 +191,47 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         except (plexapi.exceptions.NotFound, IndexError):
             raise PlexAlbumNotFound(f"The album `{album}` did not match any results {ctx.author.mention}")
 
+    def get_album_path(self, section, album):
+        """Gets album path
+
+        Parameters
+            section (str) : Section of the album (must be valid)
+            album (plexapi.audio.Album) : Album to search from
+
+        Returns
+            Path to the album as a str
+        """
+        location = album.tracks()[0].media[0].parts[0].file
+        return Partitions[section.lower()] + '/' + os.path.dirname(location.split('/', 3)[3])
+
+    def get_track_path(self, section, track):
+        """Gets track path
+
+        Parameters
+            section (str) : Section of the album of the track (must be valid)
+            track (plexapi.audio.track) : Track to search from
+
+        Returns
+            Path to the track as a str
+        """
+        location = track.media[0].parts[0].file
+        return Partitions[section.lower()] + '/' + location.split('/', 3)[3]
+
+    def get_thumbnail(self, path):
+        """Gets album thumbnail path
+
+        Parameters
+            path (str) : Path to the album
+
+        Returns
+            Path to the album thumbnail as a str if found else None
+        """
+        try:
+            # We search a file named 'cover' in the album directory
+            return path + '/' + [name for name in os.listdir(path) if 'cover' in name.lower()][0]
+        except IndexError:
+            return None
+
     @commands.group(name='plex')
     async def plex(self, ctx):
         """Invokes Plex Server commands"""
@@ -308,8 +321,8 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         # Get album info
         tracks = a.tracks()
         nb_tracks = len(tracks)
-        path = get_path(section, a)
-        thumb = get_thumbnail(path)
+        path = self.get_album_path(section, a)
+        thumb = self.get_thumbnail(path)
         if thumb is not None and os.path.isfile(thumb):
             attachment = discord.File(thumb)
             color = ColorThief(thumb).get_color(quality=7)
@@ -344,8 +357,8 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         await ctx.trigger_typing()
 
         # Check consistency
-        s = get_section(ctx, section)
-        a = get_album(ctx, s, album)
+        s = self.get_section(ctx, section)
+        a = self.get_album(ctx, s, album)
 
         # Get voice & player
         v = self.bot.get_cog('Voice')
@@ -358,14 +371,14 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         # Get album info
         tracks = a.tracks()
         nb_tracks = len(tracks)
-        path = get_path(section, a)
-        thumb = get_thumbnail(path)
+        path = self.get_album_path(section, a)
+        thumb = self.get_thumbnail(path)
 
         # Add tracks to music player queue
         for track in a.tracks():
-            source = await PlexSource.create_source(ctx, section, path, thumb, track)
+            source = await PlexSource.create_source(ctx, section, self.get_track_path(section, track), thumb, track)
             await player.queue.put(source)
 
-        embed = discord.Embed(title="Player info", description=f"Queued `{a.title}` ({nb_tracks} tracks)", color=discord.Color.blue())
+        embed = discord.Embed(title="Player info", description=f"Queued {a.title} ({nb_tracks} tracks)", color=discord.Color.blue())
         embed.set_footer(text=f"Play requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)

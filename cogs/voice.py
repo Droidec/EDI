@@ -90,7 +90,7 @@ class VoicePlayer:
             fmt = f"{source.title} [{source.duration}] | Requested by {source.requester}"
             self.np = discord.Embed(title="Now playing", description=fmt, color=discord.Color.blue())
             if source.thumb is not None and os.path.isfile(source.thumb):
-                self.attachment = discord.File(thumb)
+                self.attachment = discord.File(source.thumb)
                 self.np.set_thumbnail(url=f'attachment://{os.path.basename(source.thumb)}')
 
             await self.channel.send(file=self.attachment, embed=self.np)
