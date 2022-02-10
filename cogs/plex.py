@@ -67,7 +67,7 @@ Partitions = {
     'shows'  : 'Z:',
 }
 
-def format_duration(self, duration):
+def format_duration(duration):
     """Format duration to %M:%S
 
     Parameters
@@ -78,7 +78,7 @@ def format_duration(self, duration):
     """
     return dt.fromtimestamp(duration/1000.0).strftime('%M:%S')
 
-def get_path(self, section, album):
+def get_path(section, album):
     """Gets album path
 
     Parameters
@@ -91,7 +91,7 @@ def get_path(self, section, album):
     location = album.tracks()[0].media[0].parts[0].file
     return Partitions[section.lower()] + '/' + os.path.dirname(location.split('/', 3)[3])
 
-def get_thumbnail(self, path):
+def get_thumbnail(path):
     """Gets album thumbnail path
 
     Parameters
@@ -102,7 +102,7 @@ def get_thumbnail(self, path):
     """
     try:
         # We search a file named 'cover' in the album directory
-        return [name for name in os.listdir(path) if 'cover' in name.lower()][0]
+        return path + '/' + [name for name in os.listdir(path) if 'cover' in name.lower()][0]
     except IndexError:
         return None
 
@@ -299,11 +299,12 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         """
         await ctx.trigger_typing()
         attachment = None
+        base = 0
         ite = 0
 
         # Check consistency
         s = self.get_section(ctx, section)
-        a = self.get_album(ctx, section, album)
+        a = self.get_album(ctx, s, album)
 
         # Get album info
         tracks = a.tracks()
@@ -326,8 +327,9 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         while (NB_TRACKS_PER_EMBED_FIELD * ite) < nb_tracks:
             start = NB_TRACKS_PER_EMBED_FIELD * ite
             end = NB_TRACKS_PER_EMBED_FIELD * (ite + 1)
-            fmt = '\n'.join(f"{index+1}. {track.title} [{format_duration(track.duration)}]" for index, track in enumerate(tracks[start:end]))
+            fmt = '\n'.join(f"{base+index+1}. {track.title} [{format_duration(track.duration)}]" for index, track in enumerate(tracks[start:end]))
             embed.add_field(name=f'{start+1} - {min(nb_tracks, end)}', value=fmt, inline=False)
+            base += index
             ite += 1
 
         await ctx.send(file=attachment, embed=embed)
@@ -345,7 +347,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
 
         # Check consistency
         s = get_section(ctx, section)
-        a = get_album(ctx, section, album)
+        a = get_album(ctx, s, album)
 
         # Get voice & player
         v = self.bot.get_cog('Voice')
