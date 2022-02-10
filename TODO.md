@@ -15,3 +15,8 @@ N.B. For `section`, map user section with real section name (to avoid spaces)
     - clear : clear the queue but continue to play
     - remove : To remove a track at a specific position in the queue
 - Fix warning that appear after 1 minute of inactivity in a voice channel
+- Truncate each track ex. data[:30] + '...' if len(data) > 30 else data
+- Try to search albums by key instead with plexapi
+- Format duration to %H:%M:%S of a track if superior to 59 min 59 sec
+- Truncate tracks names to avoid 1000 limit in embed fields
+- When album info is displayed, set tracks in inline fields and limit the number of fields to avoid 6000 limit of embed

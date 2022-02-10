@@ -32,6 +32,7 @@ EDI cog error handler
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from .voice import VoiceChannelMissing, VoiceChannelNotFound, VoiceChannelInvalid, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying
+from .plex import PlexInvalidPage, PlexInvalidSection, PlexNoMatchingResults, PlexAlbumNotFound
 from discord.ext import commands
 import traceback
 import logging
@@ -65,6 +66,8 @@ class CogErrHandler(commands.Cog, name='Err'):
         elif isinstance(err, commands.MissingRequiredArgument):
             msg = f"The argument `{err.param.name}` is missing for this command {ctx.author.mention}: "
         elif isinstance(err, (VoiceChannelMissing, VoiceChannelNotFound, VoiceChannelInvalid, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying)):
+            msg = err
+        elif isinstance(err, (PlexInvalidPage, PlexInvalidSection, PlexNoMatchingResults, PlexAlbumNotFound)):
             msg = err
         else:
             msg = f"Congratulations, you've raised an exception {ctx.author.mention}"

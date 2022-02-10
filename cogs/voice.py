@@ -56,7 +56,9 @@ class VoicePlayer:
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
 
+        self.np = None # Current now playing embed
         self.current = None # Current track played
+        self.attachment = None # Current thumb file
 
         ctx.bot.loop.create_task(self.player_loop())
 
@@ -83,13 +85,22 @@ class VoicePlayer:
             # Play track
             self.current = source
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-            embed = discord.Embed(title="Now playing", description=f"{source.title}", color=discord.Color.green())
-            await self.channel.send(embed=embed)
+
+            # Set now playing embed
+            fmt = f"{source.title} [{source.duration}] | Requested by {source.requester}"
+            self.np = discord.Embed(title="Now playing", description=fmt, color=discord.Color.blue())
+            if source.thumb is not None and os.path.isfile(source.thumb):
+                self.attachment = discord.File(thumb)
+                self.np.set_thumbnail(url=f'attachment://{os.path.basename(source.thumb)}')
+
+            await self.channel.send(file=self.attachment, embed=self.np)
             await self.next.wait()
 
             # Prepare for next track
             source.cleanup()
+            self.np = None
             self.current = None
+            self.attachment = None
 
     async def destroy(self, guild):
         """Disconnects and cleanup the player
@@ -207,8 +218,8 @@ class CogVoice(commands.Cog, name='Voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        vc = ctx.voice_client
-        await ctx.send(f"[{vc.source.title}]({vc.source.requester})")
+        player = self.get_player(ctx)
+        await ctx.send(attachment=player.attachment, embed=player.np)
 
     @commands.command(name='queue')
     async def queue_info(self, ctx):
@@ -224,11 +235,11 @@ class CogVoice(commands.Cog, name='Voice'):
         else:
             nb_tracks = player.queue.qsize()
             tracks = list(itertools.islice(player.queue._queue, 0, nb_tracks))
-            fmt = '\n'.join(f"{index + 1}. {track.title} [{track.duration}] ({track.requester})" for index, track in enumerate(tracks))
+            fmt = '\n'.join(f"{index + 1}. {track.title} [{track.duration}]" for index, track in enumerate(tracks))
 
         embed = discord.Embed(title="Player queue", description=fmt, color=discord.Color.blue())
         embed.set_footer(text=f"Queue requested by: {ctx.author.display_name}")
-        return await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command(name='pause')
     async def pause(self, ctx):
@@ -293,7 +304,7 @@ class CogVoice(commands.Cog, name='Voice'):
         Parameters
             ctx (commands.Context) : Invocation context
         """
-        return await self.cleanup(ctx.guild)
+        await self.cleanup(ctx.guild)
 
     @queue_info.before_invoke
     @leave.before_invoke

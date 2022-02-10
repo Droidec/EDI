@@ -38,13 +38,16 @@ import discord
 import plexapi
 import os
 
-# Limits the number of results per search
+# Limits the number of results per page
 NB_RESULTS_PER_PAGE = 20
+
+# Limits the number of results per search
+NB_RESULTS_PER_SEARCH = 20
 
 # Limits the number of tracks per embed field
 NB_TRACKS_PER_EMBED_FIELD = 20
 
-# Possible sections
+# Possible sections to choose from
 Sections = {
     'animes' : 'Animes Music',
     'audios' : 'Audio Series',
@@ -54,7 +57,7 @@ Sections = {
     'shows'  : 'TV Shows Music',
 }
 
-# Possible partitions
+# Possible partitions mounted
 Partitions = {
     'animes' : 'U:',
     'audios' : 'V:',
@@ -64,6 +67,45 @@ Partitions = {
     'shows'  : 'Z:',
 }
 
+def format_duration(self, duration):
+    """Format duration to %M:%S
+
+    Parameters
+        duration (int) : Duration of the track in ms
+
+    Returns
+        Formatted duration as a str
+    """
+    return dt.fromtimestamp(duration/1000.0).strftime('%M:%S')
+
+def get_path(self, section, album):
+    """Gets album path
+
+    Parameters
+        section (str) : Section of the album (must be valid)
+        album (plexapi.audio.Album) : Album to search from
+
+    Returns
+        Path to the album as a str
+    """
+    location = album.tracks()[0].media[0].parts[0].file
+    return Partitions[section.lower()] + '/' + os.path.dirname(location.split('/', 3)[3])
+
+def get_thumbnail(self, path):
+    """Gets album thumbnail path
+
+    Parameters
+        path (str) : Path to the album
+
+    Returns
+        Path to the album thumbnail as a str if found else None
+    """
+    try:
+        # We search a file named 'cover' in the album directory
+        return [name for name in os.listdir(path) if 'cover' in name.lower()][0]
+    except IndexError:
+        return None
+
 class PlexSource(discord.PCMVolumeTransformer):
     """Represents a Plex audio source
 
@@ -72,37 +114,40 @@ class PlexSource(discord.PCMVolumeTransformer):
         title (str) : Audio title
         duration (int) : Audio duration in ms
         requester (discord.User|discord.Member) : Requester
+        thumb (str) : Path to the album thumbnail if exists
     """
-    def __init__(self, source, *, title, duration, requester):
+    def __init__(self, source, *, title, duration, requester, thumb=None):
         """PlexSource init"""
         super().__init__(source)
         self.title = title
-        self.duration = self.get_track_duration(duration)
+        self.duration = format_duration(duration)
         self.requester = requester
-
-    def get_track_duration(self, duration):
-        """Calculates track duration in %M:%S format
-
-        Parameters
-            duration (int) : Duration of the track in ms
-        """
-        return dt.fromtimestamp(duration/1000.0).strftime('%M:%S')
+        self.thumb = thumb
 
     @classmethod
-    async def create_source(cls, ctx, section: str, track):
-        """Create a Plex audio source
+    async def create_source(cls, ctx, section: str, path: str, thumb: str, track):
+        """Creates a Plex audio source
 
         Parameters
             ctx (commands.Context) : Invocation context
-            section (str) : Section of the album (Animes, Audios, Games, Movies, Music or Shows)
+            section (str) : Section of the album
+            path (str) : Path to the album
+            thumb (str) : Path to the album thumbnail
             track (plexapi.audio.track) : Audio track
         """
-        location = track.media[0].parts[0].file
-        path = f"{Partitions[section.lower()]}/{location.split('/', 3)[3]}"
-        if not os.path.isfile(path):
-            return await ctx.send("There was an error instantiating your song...")
+        return cls(discord.FFmpegPCMAudio(path), title=track.title, duration=track.duration, requester=ctx.author.display_name, thumb=thumb)
 
-        return cls(discord.FFmpegPCMAudio(path), title=track.title, duration=track.duration, requester=ctx.author.display_name)
+class PlexInvalidSection(commands.CommandError):
+    """Custom Exception class for Plex invalid section"""
+
+class PlexInvalidPage(commands.CommandError):
+    """Custom Exception class for Plex invalid page"""
+
+class PlexNoMatchingResults(commands.CommandError):
+    """Custom Exception class for Plex no matching results"""
+
+class PlexAlbumNotFound(commands.CommandError):
+    """Custom Exception class for Plex album not found"""
 
 class CogPlexServer(commands.Cog, name='Plex Server'):
     """All Plex Server commands and listeners
@@ -113,6 +158,66 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
     def __init__(self, bot):
         """CogPlexServer init"""
         self.bot = bot
+
+    def get_page(self, ctx, page):
+        """Gets page number from user input
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            page (str) : Page to cast
+
+        Returns
+            Page as an int
+
+        Raises
+            PlexInvalidPage if page is not valid
+        """
+        try:
+            page = int(page)
+        except ValueError:
+            raise PlexInvalidPage(f"The page number `{page}` is invalid {ctx.author.mention}")
+
+        if page <= 0:
+            raise PlexInvalidPage(f"The page number can only be strictly positive {ctx.author.mention}")
+
+    def get_section(self, ctx, section):
+        """Gets section from user input
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            section (str) : Section to search for
+
+        Returns
+            A valid plexapi.library.LibrarySection object
+
+        Raises
+            PlexInvalidSection if section is not valid
+        """
+        try:
+            return self.bot.plex.library.section(Sections[section.lower()])
+        except KeyError:
+            raise PlexInvalidSection(f"The section `{section}` is invalid {ctx.author.mention}\n"
+                                     f"Please specify one of the following sections: {', '.join(s.title() for s in Sections.keys())}")
+
+    def get_album(self, ctx, section, album):
+        """Gets album from user input
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            section (plexapi.library.LibrarySection) : Section of the album to search from
+            album (str) : Name of the album to search for
+
+        Returns
+            A valid plexapi.audio.Album object
+
+        Raises
+            PlexAlbumNotFound if album is not found
+        """
+        try:
+            # We remove commas in album title as it provokes search errors...
+            return section.search(title=album.replace(',', ''), libtype='album', limit=1)[0]
+        except (plexapi.exceptions.NotFound, IndexError):
+            raise PlexAlbumNotFound(f"The album `{album}` did not match any results {ctx.author.mention}")
 
     @commands.group(name='plex')
     async def plex(self, ctx):
@@ -132,40 +237,34 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         await ctx.trigger_typing()
 
         # Check consistency
+        s = self.get_section(ctx, section)
+        s_name = Sections[section.lower()].title()
+
         if page is None:
-            page = '1'
+            page = 1
+        else:
+            page = self.get_page(ctx, page)
 
-        try:
-            page = int(page)
-            if page <= 0:
-                raise ValueError
-        except ValueError:
-            return await ctx.send("Invalid page number...")
-
-        # Query Plex results
-        try:
-            s = self.bot.plex.library.section(Sections[section.lower()])
-        except KeyError:
-            return await ctx.send("Invalid section...")
+        # Query Plex server for all albums in this section
         results = [album.title for album in s.search(libtype='album', sort='titleSort')]
         total = len(results)
         nb_pages = total // NB_RESULTS_PER_PAGE + int(total % NB_RESULTS_PER_PAGE != 0)
 
         if page > nb_pages:
-            return await ctx.send(f"There is currently {nb_pages} pages at max...")
+            raise PlexInvalidPage(f"There are a maximum of {nb_pages} pages for the `{s_name}` section {ctx.author.mention}")
 
         start = NB_RESULTS_PER_PAGE * (page - 1)
         end = NB_RESULTS_PER_PAGE * page
 
         # Render result in a Discord embed
-        embed = discord.Embed(title=f'Page {page} of {nb_pages} in {section} section', description='\n'.join(results[start:end]))
+        embed = discord.Embed(title=f'Page {page} of {nb_pages} in {s_name} section', description='\n'.join(results[start:end]))
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         embed.set_footer(text=f"List requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @plex.command(name='search')
     async def search(self, ctx, section: str, keyword: str):
-        """ Searches album by keyword
+        """Searches album by keyword
 
         Parameters
             ctx (commands.Context) : Invocation context
@@ -175,18 +274,16 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         await ctx.trigger_typing()
 
         # Check consistency
-        try:
-            s = self.bot.plex.library.section(Sections[section.lower()])
-        except KeyError:
-            return await ctx.send("Invalid section...")
+        s = self.get_section(ctx, section)
 
-        # Search by keyword
-        results = [album.title for album in s.search(title=keyword, libtype='album', limit=20)]
+        # Query Plex server for all albums that match keyword
+        results = [album.title for album in s.search(title=keyword, libtype='album', limit=NB_RESULTS_PER_SEARCH)]
         if not results:
-            results = ['*Your search did not match any albums...*']
+            raise PlexNoMatchingResults(f"Your search did not match any results {ctx.author.mention}")
 
         # Render result in Discord embed
-        embed = discord.Embed(title='Search results (20 max)', description='\n'.join(results))
+        fmt = '\n'.join(f"- {result}" for result in results) if len(results) > 1 else results[0]
+        embed = discord.Embed(title=f'Most relevant results', description=fmt)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         embed.set_footer(text=f"Search requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
@@ -201,55 +298,39 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
             album (str) : Name of the album
         """
         await ctx.trigger_typing()
-        thumb = None
+        attachment = None
         ite = 0
 
         # Check consistency
-        try:
-            s = self.bot.plex.library.section(Sections[section.lower()])
-        except KeyError:
-            return await ctx.send("Invalid section...")
+        s = self.get_section(ctx, section)
+        a = self.get_album(ctx, section, album)
 
-        try:
-            a = s.search(title=album, libtype='album', limit=1)[0]
-        except (plexapi.exceptions.NotFound, IndexError):
-            return await ctx.send("Could not find album...")
-
+        # Get album info
         tracks = a.tracks()
         nb_tracks = len(tracks)
-
-        # Search thumbnail
-        location = tracks[0].media[0].parts[0].file
-        thumb_path = f"{Partitions[section.lower()]}/{os.path.dirname(location.split('/', 3)[3])}"
-        try:
-            cover = [name for name in os.listdir(thumb_path) if 'Cover' in name][0]
-            thumb_path = f'{thumb_path}/{cover}'
-            color = ColorThief(thumb_path).get_color(quality=7)
-        except IndexError:
-            cover = None
-
-        if cover is not None and os.path.isfile(thumb_path):
-            thumb = discord.File(thumb_path)
+        path = get_path(section, a)
+        thumb = get_thumbnail(path)
+        if thumb is not None and os.path.isfile(thumb):
+            attachment = discord.File(thumb)
+            color = ColorThief(thumb).get_color(quality=7)
 
         # Render result in Discord embed
-        if thumb is not None:
+        if attachment is not None:
             embed = discord.Embed(title=a.title, description=a.artist().title, color=discord.Color.from_rgb(*color))
+            embed.set_thumbnail(url=f'attachment://{os.path.basename(thumb)}')
         else:
             embed = discord.Embed(title=a.title, description=a.artist().title)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-        if thumb is not None:
-            embed.set_thumbnail(url=f'attachment://{cover}')
+        embed.set_footer(text=f"Info requested by: {ctx.author.display_name}")
 
         while (NB_TRACKS_PER_EMBED_FIELD * ite) < nb_tracks:
             start = NB_TRACKS_PER_EMBED_FIELD * ite
             end = NB_TRACKS_PER_EMBED_FIELD * (ite + 1)
-            value = '\n'.join(f"{track.index}. {track.title} [{get_track_duration(track.duration)}]" for track in tracks[start:end])
-            embed.add_field(name=f'{start+1} - {min(nb_tracks, end)}', value=value, inline=False)
+            fmt = '\n'.join(f"{index+1}. {track.title} [{format_duration(track.duration)}]" for index, track in enumerate(tracks[start:end]))
+            embed.add_field(name=f'{start+1} - {min(nb_tracks, end)}', value=fmt, inline=False)
             ite += 1
 
-        embed.set_footer(text=f"Info requested by: {ctx.author.display_name}")
-
-        await ctx.send(file=thumb, embed=embed)
+        await ctx.send(file=attachment, embed=embed)
 
     @plex.command(name='play')
     async def play(self, ctx, section: str, album: str):
@@ -263,27 +344,28 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         await ctx.trigger_typing()
 
         # Check consistency
-        try:
-            s = self.bot.plex.library.section(Sections[section.lower()])
-        except KeyError:
-            return await ctx.send("Invalid section...")
+        s = get_section(ctx, section)
+        a = get_album(ctx, section, album)
 
-        try:
-            a = s.search(title=album, libtype='album', limit=1)[0]
-        except (plexapi.exceptions.NotFound, IndexError):
-            return await ctx.send("Could not find album...")
-
-        # Join voice channel
-        voice = self.bot.get_cog('Voice')
+        # Get voice & player
+        v = self.bot.get_cog('Voice')
 
         if not ctx.voice_client:
-            await ctx.invoke(voice.join)
+            await ctx.invoke(v.join)
 
-        player = voice.get_player(ctx)
+        player = v.get_player(ctx)
+
+        # Get album info
+        tracks = a.tracks()
+        nb_tracks = len(tracks)
+        path = get_path(section, a)
+        thumb = get_thumbnail(path)
 
         # Add tracks to music player queue
         for track in a.tracks():
-            source = await PlexSource.create_source(ctx, section, track)
+            source = await PlexSource.create_source(ctx, section, path, thumb, track)
             await player.queue.put(source)
 
-        await ctx.send(f"Queued {a.title}")
+        embed = discord.Embed(title="Player info", description=f"Queued `{a.title}` ({nb_tracks} tracks)", color=discord.Color.blue())
+        embed.set_footer(text=f"Play requested by: {ctx.author.display_name}")
+        await ctx.send(embed=embed)
