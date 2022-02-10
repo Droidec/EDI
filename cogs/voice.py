@@ -87,8 +87,9 @@ class VoicePlayer:
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
 
             # Set now playing embed
-            fmt = f"{source.title} [{source.duration}] | Requested by {source.requester}"
+            fmt = f"{source.title} [{source.duration}]\n*{source.album}*"
             self.np = discord.Embed(title="Now playing", description=fmt, color=discord.Color.blue())
+            self.np.set_footer(text=f"Requested by: {source.requester}")
             if source.thumb is not None and os.path.isfile(source.thumb):
                 self.attachment = discord.File(source.thumb)
                 self.np.set_thumbnail(url=f'attachment://{os.path.basename(source.thumb)}')
@@ -219,7 +220,7 @@ class CogVoice(commands.Cog, name='Voice'):
             ctx (commands.Context) : Invocation context
         """
         player = self.get_player(ctx)
-        await ctx.send(attachment=player.attachment, embed=player.np)
+        await ctx.send(file=player.attachment, embed=player.np)
 
     @commands.command(name='queue')
     async def queue_info(self, ctx):

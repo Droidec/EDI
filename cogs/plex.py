@@ -83,15 +83,17 @@ class PlexSource(discord.PCMVolumeTransformer):
 
     Attributes
         source (discord.FFmpegPCMAudio) : Audio source
-        title (str) : Audio title
+        title (str) : Track title
+        album (str) : Album title
         duration (int) : Audio duration in ms
         requester (discord.User|discord.Member) : Requester
         thumb (str) : Path to the album thumbnail if exists
     """
-    def __init__(self, source, *, title, duration, requester, thumb=None):
+    def __init__(self, source, *, title, album, duration, requester, thumb=None):
         """PlexSource init"""
         super().__init__(source)
         self.title = title
+        self.album = album
         self.duration = format_duration(duration)
         self.requester = requester
         self.thumb = thumb
@@ -107,7 +109,7 @@ class PlexSource(discord.PCMVolumeTransformer):
             thumb (str) : Path to the album thumbnail
             track (plexapi.audio.track) : Audio track
         """
-        return cls(discord.FFmpegPCMAudio(path), title=track.title, duration=track.duration, requester=ctx.author.display_name, thumb=thumb)
+        return cls(discord.FFmpegPCMAudio(path), title=track.title, album=track.parentTitle, duration=track.duration, requester=ctx.author.display_name, thumb=thumb)
 
 class PlexInvalidSection(commands.CommandError):
     """Custom Exception class for Plex invalid section"""
@@ -270,7 +272,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         end = NB_RESULTS_PER_PAGE * page
 
         # Render result in a Discord embed
-        embed = discord.Embed(title=f'Page {page} of {nb_pages} in {s_name} section', description='\n'.join(results[start:end]))
+        embed = discord.Embed(title=f'Page {page} of {nb_pages} in {s_name} section', description='\n'.join(f"- {result}" for result in results[start:end]))
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         embed.set_footer(text=f"List requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
