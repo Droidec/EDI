@@ -299,7 +299,6 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         """
         await ctx.trigger_typing()
         attachment = None
-        base = 0
         ite = 0
 
         # Check consistency
@@ -327,9 +326,8 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         while (NB_TRACKS_PER_EMBED_FIELD * ite) < nb_tracks:
             start = NB_TRACKS_PER_EMBED_FIELD * ite
             end = NB_TRACKS_PER_EMBED_FIELD * (ite + 1)
-            fmt = '\n'.join(f"{base+index+1}. {track.title} [{format_duration(track.duration)}]" for index, track in enumerate(tracks[start:end]))
+            fmt = '\n'.join(f"{start+index+1}. {track.title} [{format_duration(track.duration)}]" for index, track in enumerate(tracks[start:end]))
             embed.add_field(name=f'{start+1} - {min(nb_tracks, end)}', value=fmt, inline=False)
-            base += index
             ite += 1
 
         await ctx.send(file=attachment, embed=embed)
