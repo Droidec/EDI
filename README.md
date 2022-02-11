@@ -45,6 +45,7 @@ List of bot commands with `!` prefix
 | pause   | Pauses audio                        | !pause           |                                          |
 | resume  | Resumes audio                       | !resume          |                                          |
 | skip    | Skips to next track in the queue    | !skip            |                                          |
+| clear   | Clears the queue                    | !clear           |                                          |
 | stop    | Clears the queue and stops audio    | !stop            |                                          |
 | leave   | Leaves voice channel                | !leave           |                                          |
 

@@ -278,7 +278,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         # Render result in a Discord embed
         embed = discord.Embed(title=f'Page {page} of {nb_pages} in {s_name} section', description='\n'.join(f"- {result}" for result in results[start:end]))
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-        embed.set_footer(text=f"List requested by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @plex.command(name='search')
@@ -304,7 +304,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         fmt = '\n'.join(f"- {result}" for result in results) if len(results) > 1 else results[0]
         embed = discord.Embed(title=f'Most relevant results', description=fmt)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-        embed.set_footer(text=f"Search requested by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @plex.command(name='info')
@@ -340,7 +340,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         else:
             embed = discord.Embed(title=a.title, description=a.artist().title)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-        embed.set_footer(text=f"Info requested by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
 
         while (NB_TRACKS_PER_EMBED_FIELD * ite) < nb_tracks:
             start = NB_TRACKS_PER_EMBED_FIELD * ite
@@ -386,5 +386,5 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
             await player.queue.put(source)
 
         embed = discord.Embed(title="Player info", description=f"Queued {a.title} ({nb_tracks} tracks)", color=discord.Color.blue())
-        embed.set_footer(text=f"Play requested by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)

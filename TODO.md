@@ -4,8 +4,7 @@
 - Test if bot.plex is None in `plex` command to deactivate subcommands if plexapi is not installed/initialized ?
 - Implement the following commands for the voice player:
     - loop : To loop on a track
-    - volume : to manage volume
-    - clear : clear the queue but continue to play
+    - skip multiple tracks at once
     - remove : To remove a track at a specific position in the queue
 - Fix warning that appear after 1 minute of inactivity in a voice channel
 - Truncate each track ex. data[:30] + '...' if len(data) > 30 else data

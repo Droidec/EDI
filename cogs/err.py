@@ -56,7 +56,7 @@ class CogErrHandler(commands.Cog, name='Err'):
             err (commands.CommandError) : Error that was raised
         """
         if isinstance(err, commands.DisabledCommand):
-            msg = f"This command has been disabled {ctx.author.mention}"
+            msg = f"This command is disabled {ctx.author.mention}"
         elif isinstance(err, commands.CommandNotFound):
             msg = f"I do not know this command {ctx.author.mention}"
         elif isinstance(err, commands.NoPrivateMessage):

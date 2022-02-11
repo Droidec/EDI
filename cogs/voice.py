@@ -248,14 +248,15 @@ class CogVoice(commands.Cog, name='Voice'):
         player = self.get_player(ctx)
 
         if player.queue.empty():
-            fmt = "*There is nothing in the queue...*"
+            fmt = "*Queue empty...*"
         else:
             nb_tracks = player.queue.qsize()
             tracks = list(itertools.islice(player.queue._queue, 0, nb_tracks))
-            fmt = '\n'.join(f"{index + 1}. {track.title} [{track.duration}]" for index, track in enumerate(tracks))
+            fmt = f"__Now playing__: **{player.current.title}** [{player.current.duration}] *{player.current.album}*\n__Up next__:\n"
+            fmt = fmt + '\n'.join(f"{index + 1}. {track.title} [{track.duration}] *{track.album}*" for index, track in enumerate(tracks))
 
         embed = discord.Embed(title="Player queue", description=fmt, color=discord.Color.blue())
-        embed.set_footer(text=f"Queue requested by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @commands.command(name='volume')
@@ -283,7 +284,7 @@ class CogVoice(commands.Cog, name='Voice'):
         player.volume = volume / 100
 
         embed = discord.Embed(title="Player info", description=f"Volume has been set to **{volume}%**", color=discord.Color.blue())
-        embed.set_footer(text=f"Setted by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @commands.command(name='pause')
@@ -298,7 +299,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
         ctx.voice_client.pause()
         embed = discord.Embed(title="Player info", description="Player has been paused", color=discord.Color.blue())
-        embed.set_footer(text=f"Paused by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @commands.command(name='resume')
@@ -313,7 +314,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
         ctx.voice_client.resume()
         embed = discord.Embed(title="Player info", description="Player has been resumed", color=discord.Color.blue())
-        embed.set_footer(text=f"Resumed by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @commands.command(name='skip')
@@ -324,6 +325,24 @@ class CogVoice(commands.Cog, name='Voice'):
            ctx (commands.Context) : Invocation context
         """
         ctx.voice_client.stop()
+
+    @commands.command(name='clear')
+    async def clear(self, ctx):
+        """Clears the queue
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+        """
+        player = self.get_player(ctx)
+
+        # Clear the queue
+        for _ in range(player.queue.qsize()):
+            player.queue.get_nowait()
+            player.queue.task_done()
+
+        embed = discord.Embed(title="Player info", description="Player queue cleared", color=discord.Color.blue())
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
+        await ctx.send(embed=embed)
 
     @commands.command(name='stop')
     async def stop(self, ctx):
@@ -342,7 +361,7 @@ class CogVoice(commands.Cog, name='Voice'):
         # Stop current track
         ctx.voice_client.stop()
         embed = discord.Embed(title="Player info", description="Player cleared and stopped", color=discord.Color.blue())
-        embed.set_footer(text=f"Stopped by: {ctx.author.display_name}")
+        embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @commands.command(name='leave')
