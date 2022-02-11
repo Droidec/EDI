@@ -170,19 +170,16 @@ class CogVoice(commands.Cog, name='Voice'):
 
         return player
 
-    def remove_from_queue(self, ctx, pos, announce=True):
+    def remove_from_queue(self, ctx, pos):
         """Removes specified track from queue
 
         Parameters
             ctx (commands.Context) : Invocation context
             pos (int) : Position in the queue to remove (must be valid)
-            announce (bool) : Make an announcement about removal
         """
         track = player.queue._queue[pos-1]
         del player.queue._queue[pos-1]
-        if announce:
-            embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
-            await ctx.send(embed=embed)
+        return track
 
     async def cleanup(self, guild):
         """Disconnects and cleanup the player of a guild
@@ -349,8 +346,8 @@ class CogVoice(commands.Cog, name='Voice'):
         if player.queue.empty() or not 0 < step < player.queue.qsize()+1:
             raise VoiceInvalidValue(f"Invalid skip step {ctx.author.mention}")
 
-        for i in range(step):
-            self.remove_from_queue(ctx, i, False)
+        for pos in range(step):
+            self.remove_from_queue(ctx, pos)
 
         ctx.voice_client.stop()
 
@@ -366,13 +363,17 @@ class CogVoice(commands.Cog, name='Voice'):
 
         # Check consistency
         if pos is None:
-            return self.remove_from_queue(ctx, 1, True)
+            track = self.remove_from_queue(ctx, 1)
+            embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
+            await ctx.send(embed=embed)
 
         if player.queue.empty() or not 0 < pos < player.queue.qsize()+1:
             raise VoiceInvalidValue(f"Invalid position in the queue {ctx.author.mention}")
 
         # Remove specified track
-        self.remove_from_queue(ctx, pos, True)
+        track = self.remove_from_queue(ctx, pos)
+        embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
+        await ctx.send(embed=embed)
 
     @commands.command(name='clear')
     async def clear(self, ctx):
