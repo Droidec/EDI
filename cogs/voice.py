@@ -132,11 +132,8 @@ class VoiceChannelNotFound(commands.CommandError):
 class VoiceInvalidChannel(commands.CommandError):
     """Custom Exception class for voice invalid channel"""
 
-class VoiceInvalidVolume(commands.CommandError):
-    """Custom Exception class for voice invalid volume"""
-
-class VoiceInvalidQueuePos(commands.CommandError):
-    """Custom Exception class for voice invalid queue position"""
+class VoiceInvalidValue(commands.CommandError):
+    """Custom Exception class for voice invalid value"""
 
 class VoiceConnectionError(commands.CommandError):
     """Custom Exception class for voice connection error"""
@@ -279,7 +276,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
         # Check consistency
         if not 0 < vol < 100:
-            raise VoiceInvalidVolume("Please enter a value between `1` and `100` {ctx.author.mention}")
+            raise VoiceInvalidValue("Please enter a value between `1` and `100` {ctx.author.mention}")
 
         # Change volume
         player = self.get_player(ctx)
@@ -321,13 +318,23 @@ class CogVoice(commands.Cog, name='Voice'):
         await ctx.send(embed=embed)
 
     @commands.command(name='skip')
-    async def skip(self, ctx):
+    async def skip(self, ctx, step: int=None):
         """Skips to next track in the queue
 
         Parameters
            ctx (commands.Context) : Invocation context
+           step (int) [optional] : Number of tracks to skip
         """
-        ctx.voice_client.stop()
+        if step is None:
+            ctx.voice_client.stop()
+            return
+
+        # Check consistency
+        if step < 1:
+            raise VoiceInvalidValue(f"The step can only be strictly positive {ctx.author.mention}")
+
+        for _ in range(step):
+            ctx.voice_client.stop()
 
     @commands.command(name='remove')
     async def remove(self, ctx, pos: int=None):
@@ -341,14 +348,19 @@ class CogVoice(commands.Cog, name='Voice'):
 
         if pos is None:
             player.queue._queue.pop()
-        else:
-            try:
-                track = player.queue._queue[pos-1]
-                del player.queue._queue[pos-1]
-                embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
-                await ctx.send(embed=embed)
-            except IndexError:
-                raise VoiceInvalidQueuePos("Invalid position in the queue {ctx.author.mention}")
+            return
+
+        # Check consistency
+        if pos < 1:
+            raise VoiceInvalidValue(f"The queue position can only be strictly positive {ctx.author.mention}")
+
+        try:
+            track = player.queue._queue[pos-1]
+            del player.queue._queue[pos-1]
+            embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
+            await ctx.send(embed=embed)
+        except IndexError:
+            raise VoiceInvalidValue("Invalid position in the queue {ctx.author.mention}")
 
     @commands.command(name='clear')
     async def clear(self, ctx):

@@ -44,7 +44,7 @@ List of bot commands with `!` prefix
 | volume  | Gets or changes audio/player volume | !volume [vol]   | !volume 50                               |
 | pause   | Pauses audio                        | !pause          |                                          |
 | resume  | Resumes audio                       | !resume         |                                          |
-| skip    | Skips to next track in the queue    | !skip           |                                          |
+| skip    | Skips to next track in the queue    | !skip [step]    | !skip 2                                  |
 | remove  | Removes specified track from queue  | !remove [pos]   | !remove 5                                |
 | clear   | Clears the queue                    | !clear          |                                          |
 | stop    | Clears the queue and stops audio    | !stop           |                                          |
