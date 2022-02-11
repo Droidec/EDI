@@ -192,7 +192,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         """
         try:
             # We remove commas in album title as it provokes search errors...
-            return section.search(title=album.replace(',', ''), libtype='album', limit=1)[0]
+            return section.search(filters={"album.title": album}, libtype='album', limit=1)[0]
         except (plexapi.exceptions.NotFound, IndexError):
             raise PlexAlbumNotFound(f"The album `{album}` did not match any results {ctx.author.mention}")
 

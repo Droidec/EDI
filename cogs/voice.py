@@ -76,6 +76,7 @@ class VoicePlayer:
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
 
+        self.loop = False
         self.volume = .5
         self.current = None
 
