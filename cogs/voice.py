@@ -170,6 +170,20 @@ class CogVoice(commands.Cog, name='Voice'):
 
         return player
 
+    def remove_from_queue(self, ctx, pos, announce=True):
+        """Removes specified track from queue
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            pos (int) : Position in the queue to remove (must be valid)
+            announce (bool) : Make an announcement about removal
+        """
+        track = player.queue._queue[pos-1]
+        del player.queue._queue[pos-1]
+        if announce:
+            embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
+            await ctx.send(embed=embed)
+
     async def cleanup(self, guild):
         """Disconnects and cleanup the player of a guild
 
@@ -249,7 +263,7 @@ class CogVoice(commands.Cog, name='Voice'):
         player = self.get_player(ctx)
 
         if player.queue.empty():
-            fmt = "*Queue empty...*"
+            fmt = "Queue is empty"
         else:
             nb_tracks = player.queue.qsize()
             tracks = list(itertools.islice(player.queue._queue, 0, nb_tracks))
@@ -276,7 +290,7 @@ class CogVoice(commands.Cog, name='Voice'):
             await ctx.send(embed=embed)
 
         # Check consistency
-        if not 0 < vol < 100:
+        if not 0 < vol < 101:
             raise VoiceInvalidValue("Please enter a value between `1` and `100` {ctx.author.mention}")
 
         # Change volume
@@ -326,21 +340,22 @@ class CogVoice(commands.Cog, name='Voice'):
            ctx (commands.Context) : Invocation context
            step (int) [optional] : Number of tracks to skip
         """
-        if step is None or step == 1:
-            ctx.voice_client.stop()
-            return
-
         player = self.get_player(ctx)
 
         # Check consistency
-        if not 1 < step < player.queue.qsize():
+        if step is None or step == 1:
+            return ctx.voice_client.stop()
+
+        if player.queue.empty() or not 0 < step < player.queue.qsize()+1:
             raise VoiceInvalidValue(f"Invalid skip step {ctx.author.mention}")
 
-        for _ in range(step):
-            ctx.voice_client.stop()
+        for i in range(step):
+            self.remove_from_queue(ctx, i, False)
+
+        ctx.voice_client.stop()
 
     @commands.command(name='remove')
-    async def remove(self, ctx, pos: int=None):
+    async def remove_track(self, ctx, pos: int=None):
         """Removes specified track from queue
 
         Parameters
@@ -349,18 +364,15 @@ class CogVoice(commands.Cog, name='Voice'):
         """
         player = self.get_player(ctx)
 
-        if pos is None:
-            player.queue._queue.pop()
-            return
-
         # Check consistency
-        if not 1 < pos < player.queue.qsize():
+        if pos is None:
+            return self.remove_from_queue(ctx, 1, True)
+
+        if player.queue.empty() or not 0 < pos < player.queue.qsize()+1:
             raise VoiceInvalidValue(f"Invalid position in the queue {ctx.author.mention}")
 
-        track = player.queue._queue[pos-1]
-        del player.queue._queue[pos-1]
-        embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
-        await ctx.send(embed=embed)
+        # Remove specified track
+        self.remove_from_queue(ctx, pos, True)
 
     @commands.command(name='clear')
     async def clear(self, ctx):
