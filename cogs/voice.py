@@ -69,7 +69,7 @@ class VoicePlayer:
     def __init__(self, ctx):
         """VoicePlayer init"""
         self.bot = ctx.bot
-        self.cog = ctx.cog
+        self.cog = ctx.bot.get_cog('Voice')
         self.guild = ctx.guild
         self.channel = ctx.channel
 
@@ -455,4 +455,4 @@ class CogVoice(commands.Cog, name='Voice'):
         if vc is None:
             raise VoiceNotConnected(f"I'm not currently in a voice channel {ctx.author.mention}")
         elif not vc.is_playing() and not vc.is_paused():
-            raise VoiceNotPlaying(f"I'm currently not playing anything {ctx.author.mention}")
+            raise VoiceNotPlaying(f"I'm not currently playing anything {ctx.author.mention}")
