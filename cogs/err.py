@@ -57,6 +57,8 @@ class CogErrHandler(commands.Cog, name='Err'):
         """
         if isinstance(err, commands.DisabledCommand):
             msg = f"This command is disabled {ctx.author.mention}"
+        elif isinstance(err, commands.BadArgument):
+            msg = err
         elif isinstance(err, commands.CommandNotFound):
             msg = f"I do not know this command {ctx.author.mention}"
         elif isinstance(err, commands.NoPrivateMessage):
