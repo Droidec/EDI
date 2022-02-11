@@ -161,6 +161,9 @@ class CogVoice(commands.Cog, name='Voice'):
 
         Parameters
             ctx (commands.Context) : Invocation context
+
+        Returns
+            A valid VoicePlayer object
         """
         try:
             player = self.players[ctx.guild.id]
@@ -170,11 +173,12 @@ class CogVoice(commands.Cog, name='Voice'):
 
         return player
 
-    def remove_from_queue(self, ctx, pos):
+    def remove_from_queue(self, ctx, player, pos):
         """Removes specified track from queue
 
         Parameters
             ctx (commands.Context) : Invocation context
+            player (VoicePlayer) : Guild player to remove from
             pos (int) : Position in the queue to remove (must be valid)
         """
         track = player.queue._queue[pos-1]
@@ -347,7 +351,7 @@ class CogVoice(commands.Cog, name='Voice'):
             raise VoiceInvalidValue(f"Invalid skip step {ctx.author.mention}")
 
         for pos in range(step):
-            self.remove_from_queue(ctx, pos)
+            self.remove_from_queue(ctx, player, pos)
 
         ctx.voice_client.stop()
 
@@ -363,7 +367,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
         # Check consistency
         if pos is None:
-            track = self.remove_from_queue(ctx, 1)
+            track = self.remove_from_queue(ctx, player, 1)
             embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
             await ctx.send(embed=embed)
 
@@ -371,7 +375,7 @@ class CogVoice(commands.Cog, name='Voice'):
             raise VoiceInvalidValue(f"Invalid position in the queue {ctx.author.mention}")
 
         # Remove specified track
-        track = self.remove_from_queue(ctx, pos)
+        track = self.remove_from_queue(ctx, player, pos)
         embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
         await ctx.send(embed=embed)
 
