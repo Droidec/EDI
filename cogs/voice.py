@@ -253,7 +253,7 @@ class CogVoice(commands.Cog, name='Voice'):
         else:
             nb_tracks = player.queue.qsize()
             tracks = list(itertools.islice(player.queue._queue, 0, nb_tracks))
-            fmt = f"__Now playing__: **{player.current.title}** [{player.current.duration}] *{player.current.album}*\n__Up next__:\n"
+            fmt = f"__Now playing__:\n**{player.current.title}** [{player.current.duration}] *{player.current.album}*\n__Up next__:\n"
             fmt = fmt + '\n'.join(f"{index + 1}. {track.title} [{track.duration}] *{track.album}*" for index, track in enumerate(tracks))
 
         embed = discord.Embed(title="Player queue", description=fmt, color=discord.Color.blue())
