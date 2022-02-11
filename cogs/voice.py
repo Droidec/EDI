@@ -424,7 +424,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
     @queue_info.before_invoke
     @change_volume.before_invoke
-    @remove.before_invoke
+    @remove_track.before_invoke
     @clear.before_invoke
     @leave.before_invoke
     async def ensure_voice(self, ctx):
