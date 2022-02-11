@@ -157,6 +157,8 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         if page < 1:
             raise PlexInvalidPage(f"The page number can only be strictly positive {ctx.author.mention}")
 
+        return page
+
     def get_section(self, ctx, section):
         """Gets section from user input
 
