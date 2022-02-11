@@ -326,13 +326,15 @@ class CogVoice(commands.Cog, name='Voice'):
            ctx (commands.Context) : Invocation context
            step (int) [optional] : Number of tracks to skip
         """
-        if step is None:
+        if step is None or step == 1:
             ctx.voice_client.stop()
             return
 
+        player = self.get_player(ctx)
+
         # Check consistency
-        if step < 1:
-            raise VoiceInvalidValue(f"The step can only be strictly positive {ctx.author.mention}")
+        if not 1 < step < player.queue.qsize():
+            raise VoiceInvalidValue(f"Invalid skip step {ctx.author.mention}")
 
         for _ in range(step):
             ctx.voice_client.stop()
@@ -352,16 +354,13 @@ class CogVoice(commands.Cog, name='Voice'):
             return
 
         # Check consistency
-        if pos < 1:
-            raise VoiceInvalidValue(f"The queue position can only be strictly positive {ctx.author.mention}")
+        if not 1 < pos < player.queue.qsize():
+            raise VoiceInvalidValue(f"Invalid position in the queue {ctx.author.mention}")
 
-        try:
-            track = player.queue._queue[pos-1]
-            del player.queue._queue[pos-1]
-            embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
-            await ctx.send(embed=embed)
-        except IndexError:
-            raise VoiceInvalidValue("Invalid position in the queue {ctx.author.mention}")
+        track = player.queue._queue[pos-1]
+        del player.queue._queue[pos-1]
+        embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
+        await ctx.send(embed=embed)
 
     @commands.command(name='clear')
     async def clear(self, ctx):
