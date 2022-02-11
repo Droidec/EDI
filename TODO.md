@@ -12,3 +12,4 @@
 - Format duration to %H:%M:%S of a track if superior to 59 min 59 sec
 - Truncate tracks names to avoid 1000 limit in embed fields
 - When album info is displayed, set tracks in inline fields and limit the number of fields to avoid 6000 limit of embed
+- Add the possibility to add only a track

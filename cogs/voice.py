@@ -350,8 +350,8 @@ class CogVoice(commands.Cog, name='Voice'):
         if player.queue.empty() or not 0 < step < player.queue.qsize()+1:
             raise VoiceInvalidValue(f"Invalid skip step {ctx.author.mention}")
 
-        for pos in range(step):
-            self.remove_from_queue(ctx, player, pos)
+        for _ in range(step):
+            self.remove_from_queue(ctx, player, 1)
 
         ctx.voice_client.stop()
 
