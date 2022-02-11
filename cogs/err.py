@@ -31,7 +31,7 @@ EDI cog error handler
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .voice import VoiceChannelMissing, VoiceChannelNotFound, VoiceInvalidChannel, VoiceInvalidVolume, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying
+from .voice import VoiceChannelMissing, VoiceChannelNotFound, VoiceInvalidChannel, VoiceInvalidVolume, VoiceInvalidQueuePos, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying
 from .plex import PlexInvalidCommand, PlexInvalidPage, PlexInvalidSection, PlexNoMatchingResults, PlexAlbumNotFound
 from discord.ext import commands
 import traceback
@@ -65,7 +65,7 @@ class CogErrHandler(commands.Cog, name='Err'):
             msg = f"You're not allowed to do that {ctx.author.mention}"
         elif isinstance(err, commands.MissingRequiredArgument):
             msg = f"The argument `{err.param.name}` is missing for this command {ctx.author.mention}: "
-        elif isinstance(err, (VoiceChannelMissing, VoiceChannelNotFound, VoiceInvalidChannel, VoiceInvalidVolume, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying)):
+        elif isinstance(err, (VoiceChannelMissing, VoiceChannelNotFound, VoiceInvalidChannel, VoiceInvalidVolume, VoiceInvalidQueuePos, VoiceConnectionError, VoiceNotConnected, VoiceNotPlaying)):
             msg = err
         elif isinstance(err, (PlexInvalidCommand, PlexInvalidPage, PlexInvalidSection, PlexNoMatchingResults, PlexAlbumNotFound)):
             msg = err

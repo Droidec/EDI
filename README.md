@@ -36,18 +36,19 @@ List of bot commands with `!` prefix
 
 `EDI` features a voice player to play audio from various sources
 
-| Command | Description                         | Usage            | Example                                  |
-| ------- | ----------------------------------- | ---------------- | ---------------------------------------- |
-| join    | Joins a voice channel               | !join [channel]  | !join General                            |
-| np      | Shows the current track played      | !np              |                                          |
-| queue   | Shows the player queue              | !queue           |                                          |
-| volume  | Gets or changes audio/player volume | !volume [volume] | !volume 50                               |
-| pause   | Pauses audio                        | !pause           |                                          |
-| resume  | Resumes audio                       | !resume          |                                          |
-| skip    | Skips to next track in the queue    | !skip            |                                          |
-| clear   | Clears the queue                    | !clear           |                                          |
-| stop    | Clears the queue and stops audio    | !stop            |                                          |
-| leave   | Leaves voice channel                | !leave           |                                          |
+| Command | Description                         | Usage           | Example                                  |
+| ------- | ----------------------------------- | --------------- | ---------------------------------------- |
+| join    | Joins a voice channel               | !join [channel] | !join General                            |
+| np      | Shows the current track played      | !np             |                                          |
+| queue   | Shows the player queue              | !queue          |                                          |
+| volume  | Gets or changes audio/player volume | !volume [vol]   | !volume 50                               |
+| pause   | Pauses audio                        | !pause          |                                          |
+| resume  | Resumes audio                       | !resume         |                                          |
+| skip    | Skips to next track in the queue    | !skip           |                                          |
+| remove  | Removes specified track from queue  | !remove [pos]   | !remove 5                                |
+| clear   | Clears the queue                    | !clear          |                                          |
+| stop    | Clears the queue and stops audio    | !stop           |                                          |
+| leave   | Leaves voice channel                | !leave          |                                          |
 
 ### Plex Server group commands
 

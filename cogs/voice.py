@@ -135,6 +135,9 @@ class VoiceInvalidChannel(commands.CommandError):
 class VoiceInvalidVolume(commands.CommandError):
     """Custom Exception class for voice invalid volume"""
 
+class VoiceInvalidQueuePos(commands.CommandError):
+    """Custom Exception class for voice invalid queue position"""
+
 class VoiceConnectionError(commands.CommandError):
     """Custom Exception class for voice connection error"""
 
@@ -260,30 +263,30 @@ class CogVoice(commands.Cog, name='Voice'):
         await ctx.send(embed=embed)
 
     @commands.command(name='volume')
-    async def change_volume(self, ctx, *, volume :float=None):
+    async def change_volume(self, ctx, vol: float=None):
         """Gets or changes audio/player volume
 
         Parameters
             ctx (commands.Context) : Invocation context
-            volume (int or float) : Volume to set [optional] (Value between 1 and 100)
+            vol (int or float) [optional] : Volume to set (Value between 1 and 100)
         """
         vc = ctx.voice_client
 
         # Get volume
-        if volume is None:
+        if vol is None:
             embed = discord.Embed(title="Player info", description=f"Volume is set to **{vc.source.volume*100}%**", color=discord.Color.blue())
             await ctx.send(embed=embed)
 
         # Check consistency
-        if not 0 < volume < 100:
+        if not 0 < vol < 100:
             raise VoiceInvalidVolume("Please enter a value between `1` and `100` {ctx.author.mention}")
 
         # Change volume
         player = self.get_player(ctx)
-        vc.source.volume = volume / 100
-        player.volume = volume / 100
+        vc.source.volume = vol / 100
+        player.volume = vol / 100
 
-        embed = discord.Embed(title="Player info", description=f"Volume has been set to **{volume}%**", color=discord.Color.blue())
+        embed = discord.Embed(title="Player info", description=f"Volume has been set to **{vol}%**", color=discord.Color.blue())
         embed.set_footer(text=f"Requester: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
@@ -325,6 +328,27 @@ class CogVoice(commands.Cog, name='Voice'):
            ctx (commands.Context) : Invocation context
         """
         ctx.voice_client.stop()
+
+    @commands.command(name='remove')
+    async def remove(self, ctx, pos: int=None):
+        """Removes specified track from queue
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            pos (int) [optional] : Position in the queue to remove (default is 1)
+        """
+        player = self.get_player(ctx)
+
+        if pos is None:
+            player.queue._queue.pop()
+        else:
+            try:
+                track = player.queue._queue[pos-1]
+                del player.queue._queue[pos-1]
+                embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
+                await ctx.send(embed=embed)
+            except IndexError:
+                raise VoiceInvalidQueuePos("Invalid position in the queue {ctx.author.mention}")
 
     @commands.command(name='clear')
     async def clear(self, ctx):
@@ -375,6 +399,8 @@ class CogVoice(commands.Cog, name='Voice'):
 
     @queue_info.before_invoke
     @change_volume.before_invoke
+    @remove.before_invoke
+    @clear.before_invoke
     @leave.before_invoke
     async def ensure_voice(self, ctx):
         """Ensures that EDI is in a voice channel
