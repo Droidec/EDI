@@ -288,11 +288,11 @@ class CogVoice(commands.Cog, name='Voice'):
         # Get volume
         if vol is None:
             embed = discord.Embed(title="Player info", description=f"Volume is set to **{vc.source.volume*100}%**", color=discord.Color.blue())
-            await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
 
         # Check consistency
         if not 0 < vol < 101:
-            raise VoiceInvalidValue("Please enter a value between `1` and `100` {ctx.author.mention}")
+            raise VoiceInvalidValue(f"Please enter a value between `1` and `100` {ctx.author.mention}")
 
         # Change volume
         player = self.get_player(ctx)
