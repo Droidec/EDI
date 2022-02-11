@@ -39,6 +39,26 @@ import discord
 import asyncio
 import os
 
+def get_np_embed(source):
+    """Gets now playing embed
+
+    Parameters
+        source (PlexSource) : Now playing Plex source
+
+    Returns
+        A tuple composed of:
+        - A valid discord.Embed object
+        - A discord.File attachment if exists else None
+    """
+    attachment = None
+    fmt = f"{source.title} [{source.duration}]\n*{source.album}*"
+    embed = discord.Embed(title="Now playing", description=fmt, color=discord.Color.blue())
+    embed.set_footer(text=f"Requested by: {source.requester}")
+    if source.thumb is not None and os.path.isfile(source.thumb):
+        attachment = discord.File(source.thumb)
+        embed.set_thumbnail(url=f'attachment://{os.path.basename(source.thumb)}')
+    return (embed, attachment)
+
 class VoicePlayer:
     """A voice player which implements a queue and a loop for each guild.
     When the bot is disconnected from voice channel, the player is destroyed
@@ -56,9 +76,7 @@ class VoicePlayer:
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
 
-        self.np = None # Current now playing embed
         self.current = None # Current track played
-        self.attachment = None # Current thumb file
 
         ctx.bot.loop.create_task(self.player_loop())
 
@@ -86,22 +104,14 @@ class VoicePlayer:
             self.current = source
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
 
-            # Set now playing embed
-            fmt = f"{source.title} [{source.duration}]\n*{source.album}*"
-            self.np = discord.Embed(title="Now playing", description=fmt, color=discord.Color.blue())
-            self.np.set_footer(text=f"Requested by: {source.requester}")
-            if source.thumb is not None and os.path.isfile(source.thumb):
-                self.attachment = discord.File(source.thumb)
-                self.np.set_thumbnail(url=f'attachment://{os.path.basename(source.thumb)}')
-
-            await self.channel.send(file=self.attachment, embed=self.np)
+            # Send now playing embed
+            embed, attachment = get_np_embed(source)
+            await self.channel.send(file=attachment, embed=embed)
             await self.next.wait()
 
             # Prepare for next track
             source.cleanup()
-            self.np = None
             self.current = None
-            self.attachment = None
 
     async def destroy(self, guild):
         """Disconnects and cleanup the player
@@ -220,7 +230,8 @@ class CogVoice(commands.Cog, name='Voice'):
             ctx (commands.Context) : Invocation context
         """
         player = self.get_player(ctx)
-        await ctx.send(file=player.attachment, embed=player.np)
+        embed, attachment = get_np_embed(player.current)
+        await ctx.send(file=attachment, embed=embed)
 
     @commands.command(name='queue')
     async def queue_info(self, ctx):

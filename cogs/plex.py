@@ -111,6 +111,9 @@ class PlexSource(discord.PCMVolumeTransformer):
         """
         return cls(discord.FFmpegPCMAudio(path), title=track.title, album=track.parentTitle, duration=track.duration, requester=ctx.author.display_name, thumb=thumb)
 
+class PlexInvalidCommand(commands.CommandError):
+    """Custom Exception class for Plex invalid command"""
+
 class PlexInvalidSection(commands.CommandError):
     """Custom Exception class for Plex invalid section"""
 
@@ -238,7 +241,8 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
     async def plex(self, ctx):
         """Invokes Plex Server commands"""
         if ctx.invoked_subcommand is None:
-            await ctx.send("Invalid plex command passed...")
+            raise PlexInvalidCommand(f"Invalid plex command passed {ctx.author.mention}\n"
+                                     "Type `!help plex` for help")
 
     @plex.command(name='list')
     async def list(self, ctx, section: str, page: str=None):
