@@ -369,7 +369,7 @@ class CogVoice(commands.Cog, name='Voice'):
         if pos is None:
             track = self.remove_from_queue(ctx, player, 1)
             embed = discord.Embed(title="Player info", description=f"Removed {track.title} [{track.duration}] *{track.album}*", color=discord.Color.blue())
-            await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
 
         if player.queue.empty() or not 0 < pos < player.queue.qsize()+1:
             raise VoiceInvalidValue(f"Invalid position in the queue {ctx.author.mention}")
