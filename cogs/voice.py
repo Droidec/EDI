@@ -76,7 +76,8 @@ class VoicePlayer:
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
 
-        self.current = None # Current track played
+        self.volume = .5
+        self.current = None
 
         ctx.bot.loop.create_task(self.player_loop())
 
@@ -101,6 +102,7 @@ class VoicePlayer:
                 continue
 
             # Play track
+            source.volume = self.volume
             self.current = source
             self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
 
@@ -127,8 +129,11 @@ class VoiceChannelMissing(commands.CommandError):
 class VoiceChannelNotFound(commands.CommandError):
     """Custom Exception class for voice channel not found"""
 
-class VoiceChannelInvalid(commands.CommandError):
-    """Custom Exception class for voice channel invalid"""
+class VoiceInvalidChannel(commands.CommandError):
+    """Custom Exception class for voice invalid channel"""
+
+class VoiceInvalidVolume(commands.CommandError):
+    """Custom Exception class for voice invalid volume"""
 
 class VoiceConnectionError(commands.CommandError):
     """Custom Exception class for voice connection error"""
@@ -253,6 +258,34 @@ class CogVoice(commands.Cog, name='Voice'):
         embed.set_footer(text=f"Queue requested by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
+    @commands.command(name='volume')
+    async def change_volume(self, ctx, *, volume :float=None):
+        """Gets or changes audio/player volume
+
+        Parameters
+            ctx (commands.Context) : Invocation context
+            volume (int or float) : Volume to set [optional] (Value between 1 and 100)
+        """
+        vc = ctx.voice_client
+
+        # Get volume
+        if volume is None:
+            embed = discord.Embed(title="Player info", description=f"Volume is set to **{vc.source.volume*100}%**", color=discord.Color.blue())
+            await ctx.send(embed=embed)
+
+        # Check consistency
+        if not 0 < volume < 100:
+            raise VoiceInvalidVolume("Please enter a value between `1` and `100` {ctx.author.mention}")
+
+        # Change volume
+        player = self.get_player(ctx)
+        vc.source.volume = volume / 100
+        player.volume = volume / 100
+
+        embed = discord.Embed(title="Player info", description=f"Volume has been set to **{volume}%**", color=discord.Color.blue())
+        embed.set_footer(text=f"Setted by: {ctx.author.display_name}")
+        await ctx.send(embed=embed)
+
     @commands.command(name='pause')
     async def pause(self, ctx):
         """Pauses audio
@@ -265,6 +298,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
         ctx.voice_client.pause()
         embed = discord.Embed(title="Player info", description="Player has been paused", color=discord.Color.blue())
+        embed.set_footer(text=f"Paused by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @commands.command(name='resume')
@@ -279,6 +313,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
         ctx.voice_client.resume()
         embed = discord.Embed(title="Player info", description="Player has been resumed", color=discord.Color.blue())
+        embed.set_footer(text=f"Resumed by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @commands.command(name='skip')
@@ -306,7 +341,8 @@ class CogVoice(commands.Cog, name='Voice'):
 
         # Stop current track
         ctx.voice_client.stop()
-        embed = discord.Embed(title="Player info", description="Queue has been cleared and player has been stopped", color=discord.Color.blue())
+        embed = discord.Embed(title="Player info", description="Player cleared and stopped", color=discord.Color.blue())
+        embed.set_footer(text=f"Stopped by: {ctx.author.display_name}")
         await ctx.send(embed=embed)
 
     @commands.command(name='leave')
@@ -319,6 +355,7 @@ class CogVoice(commands.Cog, name='Voice'):
         await self.cleanup(ctx.guild)
 
     @queue_info.before_invoke
+    @change_volume.before_invoke
     @leave.before_invoke
     async def ensure_voice(self, ctx):
         """Ensures that EDI is in a voice channel

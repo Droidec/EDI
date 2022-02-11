@@ -154,7 +154,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
         except ValueError:
             raise PlexInvalidPage(f"The page number `{page}` is invalid {ctx.author.mention}")
 
-        if page <= 0:
+        if page < 1:
             raise PlexInvalidPage(f"The page number can only be strictly positive {ctx.author.mention}")
 
     def get_section(self, ctx, section):
