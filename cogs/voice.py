@@ -53,7 +53,7 @@ def get_np_embed(source):
     attachment = None
     fmt = f"{source.title} [{source.duration}]\n*{source.album}*"
     embed = discord.Embed(title="Now playing", description=fmt, color=discord.Color.blue())
-    embed.set_footer(text=f"Requested by: {source.requester}")
+    embed.set_footer(text=f"Track requested by: {source.requester}")
     if source.thumb is not None and os.path.isfile(source.thumb):
         attachment = discord.File(source.thumb)
         embed.set_thumbnail(url=f'attachment://{os.path.basename(source.thumb)}')
