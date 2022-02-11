@@ -281,7 +281,7 @@ class CogVoice(commands.Cog, name='Voice'):
 
         Parameters
             ctx (commands.Context) : Invocation context
-            vol (int or float) [optional] : Volume to set (Value between 1 and 100)
+            vol (int or float) [optional] : Volume to set (Value between 0 and 100)
         """
         vc = ctx.voice_client
 
@@ -291,7 +291,7 @@ class CogVoice(commands.Cog, name='Voice'):
             return await ctx.send(embed=embed)
 
         # Check consistency
-        if not 0 < vol < 101:
+        if not 0 <= vol <= 100:
             raise VoiceInvalidValue(f"Please enter a value between `1` and `100` {ctx.author.mention}")
 
         # Change volume
