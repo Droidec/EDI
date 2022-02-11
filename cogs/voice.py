@@ -116,7 +116,7 @@ class VoicePlayer:
             source.cleanup()
             self.current = None
 
-    async def destroy(self, guild):
+    def destroy(self, guild):
         """Disconnects and cleanup the player
 
         Parameters
