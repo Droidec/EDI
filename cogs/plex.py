@@ -34,6 +34,7 @@ EDI Plex Server commands and listeners
 from datetime import datetime as dt
 from colorthief import ColorThief
 from discord.ext import commands
+import platform
 import discord
 import plexapi
 import os
@@ -57,14 +58,24 @@ Sections = {
     'shows'  : 'TV Shows Music',
 }
 
-# Possible partitions mounted
-Partitions = {
+# Possible partitions mounted on Windows
+Win_Partitions = {
     'animes' : 'U:',
     'audios' : 'V:',
     'games'  : 'W:',
     'movies' : 'X:',
     'music'  : 'Y:',
     'shows'  : 'Z:',
+}
+
+# Possible partitions mounted on Mac
+Mac_Partitions = {
+    'animes' : f'/Volumes/Animes Music',
+    'audios' : f'/Volumes/Audio Series',
+    'games'  : f'/Volumes/Games Music',
+    'movies' : f'/Volumes/Movies Music',
+    'music'  : f'/Volumes/Music',
+    'shows'  : f'/Volumes/TV Shows Music'
 }
 
 def format_duration(duration):
@@ -135,6 +146,14 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
     def __init__(self, bot):
         """CogPlexServer init"""
         self.bot = bot
+
+        os = platform.system()
+        if os == 'Windows':
+            self.partitions = Win_Partitions
+        elif os == 'Darwin':
+            self.partitions = Mac_Partitions
+        else:
+            raise OSError('Only Windows and Mac OS are handled for Plex services')
 
     def get_page(self, ctx, page):
         """Gets page number from user input
@@ -209,7 +228,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
             Path to the album as a str
         """
         location = album.tracks()[0].media[0].parts[0].file
-        return Partitions[section.lower()] + '/' + os.path.dirname(location.split('/', 3)[3])
+        return self.partitions[section.lower()] + '/' + os.path.dirname(location.split('/', 3)[3])
 
     def get_track_path(self, section, track):
         """Gets track path
@@ -222,7 +241,7 @@ class CogPlexServer(commands.Cog, name='Plex Server'):
             Path to the track as a str
         """
         location = track.media[0].parts[0].file
-        return Partitions[section.lower()] + '/' + location.split('/', 3)[3]
+        return self.partitions[section.lower()] + '/' + location.split('/', 3)[3]
 
     def get_thumbnail(self, path):
         """Gets album thumbnail path
