@@ -1,83 +1,63 @@
-# -*- coding: utf-8 -*-
 """
-EDI Discord bot
+EDI Discord bot.
 """
-#
-# Copyright (c) 2022, Marc GIANNETTI <mgtti.pro@gmail.com>
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without modification,
-# are permitted provided that the following conditions are met:
-#
-#  - Redistributions of source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.
-#
-#  - Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
-#
-#  - Neither the name of the copyright holder nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from argparse import ArgumentParser, RawTextHelpFormatter
-from plexapi.server import PlexServer
-from discord.ext import commands
-import discord
+import json
 import logging
-import cogs
+import os
+import sys
+from argparse import ArgumentParser
 
-class EDI(commands.Bot):
+import discord
+from discord.ext.commands import Bot
+
+class EDI(Bot):
     """EDI skeleton
 
-    Attributes
-        See commands.Bot
+    Attributes:
+        config (dict):
+            A dictionary containing the bot configuration
     """
-    def __init__(self, *args, **kwargs):
-        """Bot init"""
-        super().__init__(*args, **kwargs)
-        self.plex = None
+    def __init__(self, config: dict, **options):
+        """EDI initializer
 
-    def init_plex(self, base_url, token):
-        """Initialize Plex context
-
-        Parameters
-            base_url (str) : Base URL of the Plex server to connect to
-            token (str) : Plex account token
+        Args:
+            config (dict):
+                A dictionary containing the bot configuration
         """
-        self.plex = PlexServer(base_url, token)
+        super().__init__(**options)
+
+        # Set configuration
+        self.config = config
+
+        # Set logger
+        self.logger = logging.getLogger('discord')
+        self.logger.setLevel(logging.INFO)
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+        self.logger.addHandler(handler)
 
     async def on_ready(self):
-        """Coroutine called when the Bot is UP"""
-        logging.info(f"Bot is UP: {self.user.name}:{self.user.id}")
+        """Coroutine called when the bot finished logging in"""
+        logger = logging.getLogger('discord')
+        self.logger.info(type(self.config))
 
-if __name__ == "__main__":
-    # Set logging
-    logging.basicConfig(level=logging.INFO, format="[%(asctime)s] (%(levelname)s) %(message)s")
-
+if __name__ == '__main__':
     # Parse arguments
-    parser = ArgumentParser(description="EDI discord bot", formatter_class=RawTextHelpFormatter)
-    parser.add_argument('plex_base_url', help="Base URL of the Plex server to connect to")
-    parser.add_argument('plex_token', help="Plex account token")
-    parser.add_argument('discord_token', help="Discord bot token")
+    parser = ArgumentParser(description='EDI discord bot')
+    parser.add_argument('json_file', help='JSON configuration file')
     args = parser.parse_args()
 
+    # Load JSON configuration
+    if not os.path.isfile(args.json_file):
+        sys.exit(f'JSON configuration file not found! Please try again.')
+
+    with open(args.json_file) as file:
+        config = json.load(file)
+
     # Start bot
-    bot = EDI(command_prefix='!', activity=discord.Game(name='!help'))
-    bot.init_plex(args.plex_base_url, args.plex_token)
-    bot.add_cog(cogs.CogErrHandler(bot))
-    bot.add_cog(cogs.CogBasic(bot))
-    bot.add_cog(cogs.CogVoice(bot))
-    bot.add_cog(cogs.CogPlexServer(bot))
-    bot.run(args.discord_token)
+    bot = EDI(
+        config=config,
+        intents=discord.Intents.default(),
+    )
+    bot.run(config['BOT_TOKEN'])
