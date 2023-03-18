@@ -18,16 +18,20 @@ python3 edi.py <json_configuration_file>
 
 ## JSON configuration file
 
-| Key       | Description           |
-| --------- | --------------------- |
-| BOT_TOKEN | The Discord bot token |
+`EDI` needs a JSON configuration file to start:
+
+```json
+{
+    "BOT_TOKEN": "The Discord bot token here"
+}
+```
 
 ## Commands
 
-`EDI` uses the new slash commands.
+`EDI` uses slash commands.
 
 ### Basic commands
 
-| Command          | Description                                         | Usage        | Example       |
-| ---------------- | --------------------------------------------------- | ------------ | ------------- |
-| hello &#124; hey | Mentions and greets user                            | /hello       |               |
+| Command | Description              | Usage  | Example |
+| ------- | ------------------------ | ------ | ------- |
+| hello   | Mentions and greets user | /hello |         |
