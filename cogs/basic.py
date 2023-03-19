@@ -20,11 +20,11 @@ class Basic(commands.Cog):
         bot (EDI):
             EDI bot instance.
     """
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         """CogBasic initializer.
 
         Args:
-            bot (EDI):
+            bot (commands.Bot):
                 EDI bot instance.
         """
         self.bot = bot
@@ -39,9 +39,44 @@ class Basic(commands.Cog):
         """
         await ctx.respond(f'Hello {ctx.author.mention}! Nice to meet you.', ephemeral=True)
 
+    @commands.slash_command(name='help', description='Show all available commands.')
+    async def help(self, ctx: discord.ApplicationContext):
+        """Sends an embed with all available commands per cogs.
+
+        TODO: develop an embed page system because of the limited size of data
+        we can display
+
+        Args:
+            ctx (discord.ApplicationContext):
+                The context of the command.
+        """
+        embed = discord.Embed(
+            title='Help',
+            description='List of available commands.',
+            color=discord.Color.blurple(),
+        )
+
+        for cog_name in self.bot.cogs:
+            cog = self.bot.get_cog(cog_name)
+            cmds = cog.get_commands()
+            data = []
+
+            for cmd in cmds:
+                description = cmd.description.partition('\n')[0]
+                data.append(f'/{cmd.name} - {description}')
+
+            help_text = '\n'.join(data)
+            embed.add_field(
+                name=f'{cog_name.capitalize()} commands',
+                value=f'```{help_text}```',
+                inline=False,
+            )
+
+        await ctx.respond(embed=embed)
+
     @commands.slash_command(name='version', description='Ask the bot version.')
     async def version(self, ctx: discord.ApplicationContext):
-        """Send the current version to the author.
+        """Sends the current version to the author.
 
         Args:
             ctx (discord.ApplicationContext):

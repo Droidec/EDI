@@ -74,11 +74,11 @@ class EDI(commands.Bot):
         this error handler explicitely say that it does not support such
         commands and print the traceback in any case.
         """
-        await ctx.send(f'I only support slash commands {ctx.author.mention}.')
+        await ctx.send(f'I only support slash commands {ctx.author.mention}. Give it a try with the `/help` command.')
 
         trace = ''.join(traceback.format_exception(type(err), err, err.__traceback__))
-        self.logger.error(f'{ctx.author.name}#{ctx.author.discriminator} on {ctx.guild.name} tried to use a prefix/mention command:'
-                          f'\n{trace}')
+        self.logger.error(f'{ctx.author.name}#{ctx.author.discriminator} on {ctx.guild.name} tried to use a prefix/mention command:\n'
+                          f'{trace}')
 
     async def on_application_command_error(self, ctx: discord.ApplicationContext, err: discord.errors.DiscordException) -> None:
         """Coroutine called when an exception is raised in a slash command.
@@ -115,9 +115,11 @@ if __name__ == '__main__':
         json_config = json.load(file)
 
     # Start bot
+    intents = discord.Intents.default()
+    intents.message_content = True
     bot = EDI(
         config=json_config,
-        intents=discord.Intents.default(),
+        intents=intents,
     )
     bot.load_extensions()
     bot.run(bot.config['BOT_TOKEN'])

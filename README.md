@@ -22,7 +22,7 @@ python3 edi.py <json_configuration_file>
 
 ```json
 {
-    "BOT_TOKEN": "The Discord bot token here"
+    "BOT_TOKEN": "The Discord bot token goes here"
 }
 ```
 
@@ -32,7 +32,8 @@ python3 edi.py <json_configuration_file>
 
 ### Basic commands
 
-| Command | Description          | Usage    | Example |
-| ------- | ---------------------| -------- | ------- |
-| hello   | Say hello to the bot | /hello   |         |
-| version | Ask the bot version  | /version |         |
+| Command | Description                 | Usage    |
+| ------- | --------------------------- | -------- |
+| hello   | Say hello to the bot        | /hello   |
+| help    | Show all available commands | /help    |
+| version | Ask the bot version         | /version |
