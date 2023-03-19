@@ -32,6 +32,7 @@ python3 edi.py <json_configuration_file>
 
 ### Basic commands
 
-| Command | Description              | Usage  | Example |
-| ------- | ------------------------ | ------ | ------- |
-| hello   | Mentions and greets user | /hello |         |
+| Command | Description          | Usage    | Example |
+| ------- | ---------------------| -------- | ------- |
+| hello   | Say hello to the bot | /hello   |         |
+| version | Ask the bot version  | /version |         |
