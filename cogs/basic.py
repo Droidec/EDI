@@ -6,6 +6,7 @@ Basic EDI commands.
 
 import discord
 from discord.ext import commands
+from discord.ext.pages import Paginator, Page
 
 # class BasicCommandError(commands.CommandError):
 #     """Custom error"""
@@ -30,7 +31,7 @@ class Basic(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(name='hello', description='Say hello to the bot.')
-    async def hello(self, ctx: discord.ApplicationContext):
+    async def hello(self, ctx: discord.ApplicationContext) -> None:
         """Mentions and greets author.
 
         Args:
@@ -40,7 +41,7 @@ class Basic(commands.Cog):
         await ctx.respond(f'Hello {ctx.author.mention}! Nice to meet you.', ephemeral=True)
 
     @commands.slash_command(name='help', description='Show all available commands.')
-    async def help(self, ctx: discord.ApplicationContext):
+    async def help(self, ctx: discord.ApplicationContext) -> None:
         """Sends an embed with all available commands per cogs.
 
         TODO: develop an embed page system because of the limited size of data
@@ -74,8 +75,30 @@ class Basic(commands.Cog):
 
         await ctx.respond(embed=embed)
 
+    @commands.slash_command(name='test', description='For development purpose only.')
+    async def test(self, ctx: discord.ApplicationContext) -> None:
+        """This command is used for development purpose only. Its content
+        depends on the developer's need. It should be disabled when not needed.
+
+        Args:
+            ctx (discord.ApplicationContext):
+                The context of the command.
+        """
+        pages = []
+
+        for i in range(1, 50):
+            embed = discord.Embed(
+                title=f'Embed 1-{i}'
+            )
+            pages.append(Page(embeds=[embed]))
+
+        await Paginator(
+            pages=pages,
+            timeout=10.0
+        ).respond(ctx.interaction)
+
     @commands.slash_command(name='version', description='Ask the bot version.')
-    async def version(self, ctx: discord.ApplicationContext):
+    async def version(self, ctx: discord.ApplicationContext) -> None:
         """Sends the current version to the author.
 
         Args:

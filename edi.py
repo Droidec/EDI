@@ -120,6 +120,7 @@ if __name__ == '__main__':
     bot = EDI(
         config=json_config,
         intents=intents,
+        help_command=None,
     )
     bot.load_extensions()
     bot.run(bot.config['BOT_TOKEN'])
