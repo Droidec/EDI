@@ -22,6 +22,7 @@ python3 edi.py <json_configuration_file>
 
 ```json
 {
+    "LOG_LEVEL": "The log level to use at startup: INFO, DEBUG, ERROR...",
     "BOT_TOKEN": "The Discord bot token goes here"
 }
 ```
@@ -32,9 +33,19 @@ python3 edi.py <json_configuration_file>
 
 ### Basic commands
 
+Theses commands are loaded by `EDI` in any circumstances.
+
 | Command | Description                  | Usage    |
 | ------- | ---------------------------- | -------- |
 | hello   | Say hello to the bot         | /hello   |
 | help    | Show all available commands  | /help    |
 | test    | For development purpose only | /test    |
 | version | Ask the bot version          | /version |
+
+### Fun commands (extension)
+
+Theses commands are used to play with `EDI`.
+
+| Command | Description                   | Usage        | Example     |
+| ------- | ----------------------------- | ------------ | ----------- |
+| roll    | Roll dices and sum the result | /roll [expr] | /roll 2d6+5 |

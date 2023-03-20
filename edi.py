@@ -13,6 +13,7 @@ import traceback
 
 import discord
 from discord.ext import commands
+from discord.ext.pages import Paginator, Page
 
 EDI_VERSION = '1.0.0'
 
@@ -43,7 +44,7 @@ class EDI(commands.Bot):
 
         # Set logger
         self.logger = logging.getLogger('discord')
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(config['LOG_LEVEL'])
         handler = logging.StreamHandler()
         handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
         self.logger.addHandler(handler)
@@ -65,6 +66,7 @@ class EDI(commands.Bot):
         self.logger.info(f'Logged in as {self.user.name}#{self.user.discriminator}')
         self.logger.info(f'EDI API version: {self.version}')
         self.logger.info(f'pycord API version: {discord.__version__}')
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name='/help'))
 
     async def on_command_error(self, ctx: commands.Context, err: commands.errors.CommandError) -> None:
         """Coroutine called when an exception is raised in a prefix or mention
@@ -74,7 +76,7 @@ class EDI(commands.Bot):
         this error handler explicitely say that it does not support such
         commands and print the traceback in any case.
         """
-        await ctx.send(f'I only support slash commands {ctx.author.mention}. Give it a try with the `/help` command.')
+        await ctx.send(f'{ctx.author.mention} I only support slash commands. Give it a try with the `/help` command.')
 
         trace = ''.join(traceback.format_exception(type(err), err, err.__traceback__))
         self.logger.error(f'{ctx.author.name}#{ctx.author.discriminator} on {ctx.guild.name} tried to use a prefix/mention command:\n'
@@ -93,13 +95,120 @@ class EDI(commands.Bot):
                 The error that was raised.
         """
         if isinstance(err, commands.CommandNotFound):
-            await ctx.respond(f'I do not known this command {ctx.author.mention}.', ephemeral=True)
+            await ctx.respond(f'{ctx.author.mention} I do not known this command.', ephemeral=True)
         elif isinstance(err, commands.DisabledCommand):
-            await ctx.respond(f'This command is disabled {ctx.author.mention}.', ephemeral=True)
+            await ctx.respond(f'{ctx.author.mention} This command is disabled.', ephemeral=True)
+        elif isinstance(err, commands.MissingPermissions):
+            await ctx.respond(f'{ctx.author.mention} {str(err)}', ephemeral=True)
 
         trace = ''.join(traceback.format_exception(type(err), err, err.__traceback__))
         self.logger.error(f'{ctx.author.name}#{ctx.author.discriminator} on {ctx.guild.name} raised an exception with slash command '
                           f'{ctx.command.name}:{ctx.command.options}:\n{trace}')
+
+class Basic(commands.Cog):
+    """EDI basic commands.
+
+    These commands are loaded by EDI in any circumstances.
+
+    Attributes:
+        bot (commands.Bot):
+            EDI bot instance.
+    """
+    def __init__(self, bot: commands.Bot):
+        """Basic cog initializer.
+
+        Args:
+            bot (commands.Bot):
+                EDI bot instance.
+        """
+        self.bot = bot
+
+    @commands.slash_command(name='hello', description='Say hello to the bot.')
+    async def hello(self, ctx: discord.ApplicationContext) -> None:
+        """Mentions and greets author.
+
+        Args:
+            ctx (discord.ApplicationContext):
+                The context of the command.
+        """
+        await ctx.respond(f'Hello {ctx.author.mention}! Nice to meet you.', ephemeral=True)
+
+    @commands.slash_command(name='help', description='Show all available commands.')
+    async def help(self, ctx: discord.ApplicationContext) -> None:
+        """Sends an embed with all available commands per cogs.
+
+        TODO: develop an embed page system because of the limited size of data
+        we can display
+
+        Args:
+            ctx (discord.ApplicationContext):
+                The context of the command.
+        """
+        embed = discord.Embed(
+            title='Help',
+            description='List of available commands.',
+            color=discord.Color.blurple(),
+        )
+
+        # Useful links
+        embed.add_field(
+            name=f'Useful links',
+            value='- Source code: https://github.com/Droidec/EDI',
+            inline=False,
+        )
+
+        for cog_name in sorted(self.bot.cogs):
+            cog = self.bot.get_cog(cog_name)
+            cmds = cog.get_commands()
+            data = []
+
+            for cmd in cmds:
+                description = cmd.description.partition('\n')[0]
+                data.append(f'/{cmd.name} - {description}')
+
+            help_text = '\n'.join(data)
+
+            # Cog commands
+            embed.add_field(
+                name=f'{cog_name.capitalize()} commands',
+                value=f'```{help_text}```',
+                inline=False,
+            )
+
+        await ctx.respond(embed=embed, ephemeral=True)
+
+    @commands.slash_command(name='test', description='For development purpose (admin only).')
+    @commands.has_permissions(administrator=True)
+    async def test(self, ctx: discord.ApplicationContext) -> None:
+        """This command is used for development purpose only. Its content
+        depends on the developer's need. It should be disabled when not needed.
+
+        Args:
+            ctx (discord.ApplicationContext):
+                The context of the command.
+        """
+        pages = []
+
+        for i in range(1, 50):
+            embed = discord.Embed(
+                title=f'Embed 1-{i}'
+            )
+            pages.append(Page(embeds=[embed]))
+
+        await Paginator(
+            pages=pages,
+            timeout=10.0
+        ).respond(ctx.interaction)
+
+    @commands.slash_command(name='version', description='Ask the bot version.')
+    async def version(self, ctx: discord.ApplicationContext) -> None:
+        """Sends the current version to the author.
+
+        Args:
+            ctx (discord.ApplicationContext):
+                The context of the command.
+        """
+        await ctx.respond(f'{ctx.author.mention} My current version is `{self.bot.version}`.', ephemeral=True)
 
 if __name__ == '__main__':
     # Parse arguments
@@ -122,5 +231,6 @@ if __name__ == '__main__':
         intents=intents,
         help_command=None,
     )
+    bot.add_cog(Basic(bot))
     bot.load_extensions()
     bot.run(bot.config['BOT_TOKEN'])
