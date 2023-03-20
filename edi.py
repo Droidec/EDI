@@ -49,16 +49,16 @@ class EDI(commands.Bot):
         handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
         self.logger.addHandler(handler)
 
-    def load_extensions(self) -> None:
-        """Load EDI extensions."""
+    def load_local_extensions(self) -> None:
+        """Load EDI local extensions."""
         for file in os.listdir(f'{os.path.realpath(os.path.dirname(__file__))}/cogs'):
             if file.endswith('.py'):
                 extension = file[:-3]
                 try:
-                    bot.load_extension(f'cogs.{extension}')
+                    self.load_extension(f'cogs.{extension}')
                     self.logger.info(f'Loaded extension "{extension}"')
-                except Exception as e:
-                    exception = f'{type(e).__name__}: {e}'
+                except Exception as err:
+                    exception = f'{type(err).__name__}: {err}'
                     self.logger.error(f'Failed to load extension "{extension}"\n{exception}')
 
     async def on_ready(self) -> None:
@@ -137,8 +137,14 @@ class Basic(commands.Cog):
     async def help(self, ctx: discord.ApplicationContext) -> None:
         """Sends an embed with all available commands per cogs.
 
+        TODO: embed footer with timestamp and avatar?
+
         TODO: develop an embed page system because of the limited size of data
         we can display
+
+        TODO: optional argument to have commands for a specific cog?
+
+        TODO: optional argument to display in non-ephemeral if admin?
 
         Args:
             ctx (discord.ApplicationContext):
@@ -152,7 +158,7 @@ class Basic(commands.Cog):
 
         # Useful links
         embed.add_field(
-            name=f'Useful links',
+            name='Useful links',
             value='- Source code: https://github.com/Droidec/EDI',
             inline=False,
         )
@@ -213,24 +219,24 @@ class Basic(commands.Cog):
 if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser(description='EDI discord bot')
-    parser.add_argument('json_file', help='JSON configuration file')
+    parser.add_argument('json_config', help='JSON configuration file')
     args = parser.parse_args()
 
     # Load JSON configuration
-    if not os.path.isfile(args.json_file):
+    if not os.path.isfile(args.json_config):
         sys.exit('JSON configuration file not found! Please try again.')
 
-    with open(args.json_file, encoding='utf-8') as file:
-        json_config = json.load(file)
+    with open(args.json_config, encoding='utf-8') as json_file:
+        json_config = json.load(json_file)
 
     # Start bot
     intents = discord.Intents.default()
     intents.message_content = True
-    bot = EDI(
+    edi = EDI(
         config=json_config,
         intents=intents,
         help_command=None,
     )
-    bot.add_cog(Basic(bot))
-    bot.load_extensions()
-    bot.run(bot.config['BOT_TOKEN'])
+    edi.add_cog(Basic(edi))
+    edi.load_local_extensions()
+    edi.run(edi.config['BOT_TOKEN'])
