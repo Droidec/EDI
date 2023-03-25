@@ -19,7 +19,7 @@ class Fun(commands.Cog):
             EDI bot instance.
     """
 
-    images = f'{os.path.dirname(__file__)}/images'
+    images = f'{os.path.realpath(os.path.dirname(__file__))}/images'
     dice_image = {
         'd4': f'{images}/d4.png',
         'd6': f'{images}/d6.png',
