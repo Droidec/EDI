@@ -61,6 +61,18 @@ class EDI(commands.Bot):
                     exception = f'{type(err).__name__}: {err}'
                     self.logger.error(f'Failed to load extension "{extension}"\n{exception}')
 
+    def prepare_local_file(self, path: str) -> tuple:
+        """Prepares a local file to be sent on Discord API.
+
+        Args:
+            path (str):
+                The path to the local file
+
+        Returns:
+            A tuple (url, file) containing the url and the Discord file.
+        """
+        return (f'attachment://{os.path.basename(path)}', discord.File(path))
+
     async def on_ready(self) -> None:
         """Coroutine called when the bot finished logging in."""
         self.logger.info(f'Logged in as {self.user.name}#{self.user.discriminator}')
@@ -100,6 +112,8 @@ class EDI(commands.Bot):
             await ctx.respond(f'{ctx.author.mention} This command is disabled.', ephemeral=True)
         elif isinstance(err, commands.MissingPermissions):
             await ctx.respond(f'{ctx.author.mention} {str(err)}', ephemeral=True)
+        elif isinstance(err, commands.NotOwner):
+            await ctx.respond(f'{ctx.author.mention} This command can be used by my owner only.', ephemeral=True)
 
         trace = ''.join(traceback.format_exception(type(err), err, err.__traceback__))
         self.logger.error(f'{ctx.author.name}#{ctx.author.discriminator} on {ctx.guild.name} raised an exception with slash command '
@@ -123,7 +137,7 @@ class Basic(commands.Cog):
         """
         self.bot = bot
 
-    @commands.slash_command(name='hello', description='Say hello to the bot.')
+    @commands.slash_command(name='hello', description='Say hello to EDI.')
     async def hello(self, ctx: discord.ApplicationContext) -> None:
         """Mentions and greets author.
 
@@ -133,18 +147,11 @@ class Basic(commands.Cog):
         """
         await ctx.respond(f'Hello {ctx.author.mention}! Nice to meet you.', ephemeral=True)
 
-    @commands.slash_command(name='help', description='Show all available commands.')
+    @commands.slash_command(name='help', description='View basic help and information about EDI.')
     async def help(self, ctx: discord.ApplicationContext) -> None:
         """Sends an embed with all available commands per cogs.
 
-        TODO: embed footer with timestamp and avatar?
-
-        TODO: develop an embed page system because of the limited size of data
-        we can display
-
-        TODO: optional argument to have commands for a specific cog?
-
-        TODO: optional argument to display in non-ephemeral if admin?
+        TODO: display in paginator?
 
         Args:
             ctx (discord.ApplicationContext):
@@ -152,15 +159,15 @@ class Basic(commands.Cog):
         """
         embed = discord.Embed(
             title='Help',
-            description='List of available commands.',
+            description='List of available commands. See also builtin Discord menu.',
             color=discord.Color.blurple(),
         )
 
         # Useful links
         embed.add_field(
-            name='Useful links',
-            value='- Source code: https://github.com/Droidec/EDI',
-            inline=False,
+            name='Useful link',
+            value='Source code: https://github.com/Droidec/EDI',
+            inline=False
         )
 
         for cog_name in sorted(self.bot.cogs):
@@ -178,16 +185,16 @@ class Basic(commands.Cog):
             embed.add_field(
                 name=f'{cog_name.capitalize()} commands',
                 value=f'```{help_text}```',
-                inline=False,
+                inline=False
             )
 
         await ctx.respond(embed=embed, ephemeral=True)
 
-    @commands.slash_command(name='test', description='For development purpose (admin only).')
-    @commands.has_permissions(administrator=True)
+    @commands.slash_command(name='test', description='For development purpose (owner only).')
+    @commands.is_owner()
     async def test(self, ctx: discord.ApplicationContext) -> None:
         """This command is used for development purpose only. Its content
-        depends on the developer's need. It should be disabled when not needed.
+        depends on the owner's need. It should be disabled when not needed.
 
         Args:
             ctx (discord.ApplicationContext):
@@ -196,9 +203,7 @@ class Basic(commands.Cog):
         pages = []
 
         for i in range(1, 50):
-            embed = discord.Embed(
-                title=f'Embed 1-{i}'
-            )
+            embed = discord.Embed(title=f'Embed 1-{i}')
             pages.append(Page(embeds=[embed]))
 
         await Paginator(
@@ -206,7 +211,7 @@ class Basic(commands.Cog):
             timeout=10.0
         ).respond(ctx.interaction)
 
-    @commands.slash_command(name='version', description='Ask the bot version.')
+    @commands.slash_command(name='version', description='View EDI version.')
     async def version(self, ctx: discord.ApplicationContext) -> None:
         """Sends the current version to the author.
 
@@ -235,7 +240,7 @@ if __name__ == '__main__':
     edi = EDI(
         config=json_config,
         intents=intents,
-        help_command=None,
+        help_command=None
     )
     edi.add_cog(Basic(edi))
     edi.load_local_extensions()

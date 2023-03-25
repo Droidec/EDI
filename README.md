@@ -35,17 +35,17 @@ python3 edi.py <json_configuration_file>
 
 Theses commands are loaded by `EDI` in any circumstances.
 
-| Command | Description                  | Usage    |
-| ------- | ---------------------------- | -------- |
-| hello   | Say hello to the bot         | /hello   |
-| help    | Show all available commands  | /help    |
-| test    | For development purpose only | /test    |
-| version | Ask the bot version          | /version |
+| Command | Description                                | Usage    |
+| ------- | ------------------------------------------ | -------- |
+| hello   | Say hello to EDI                           | /hello   |
+| help    | View basic help and information about EDI  | /help    |
+| test    | For development purpose only (owner only)  | /test    |
+| version | View EDI running version                   | /version |
 
 ### Fun commands (extension)
 
 Theses commands are used to play with `EDI`.
 
-| Command | Description                   | Usage        | Example     |
-| ------- | ----------------------------- | ------------ | ----------- |
-| roll    | Roll dices and sum the result | /roll [expr] | /roll 2d6+5 |
+| Command | Description   | Usage                 | Example                     |
+| ------- | ------------- | --------------------- | --------------------------- |
+| roll    | Roll the dice | /roll <sides> <count> | /roll `sides:d6` `count:5`  |
