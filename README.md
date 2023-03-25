@@ -33,7 +33,7 @@ python3 edi.py <json_configuration_file>
 
 ### Basic commands
 
-Theses commands are loaded by `EDI` in any circumstances.
+These commands are loaded by `EDI` in any circumstances.
 
 | Command | Description                                | Usage    |
 | ------- | ------------------------------------------ | -------- |
@@ -42,10 +42,20 @@ Theses commands are loaded by `EDI` in any circumstances.
 | test    | For development purpose only (owner only)  | /test    |
 | version | View EDI running version                   | /version |
 
-### Fun commands (extension)
+### Fun commands
 
-Theses commands are used to play with `EDI`.
+These commands are used to play with `EDI`.
 
 | Command | Description   | Usage                 | Example                     |
 | ------- | ------------- | --------------------- | --------------------------- |
 | roll    | Roll the dice | /roll <sides> <count> | /roll `sides:d6` `count:5`  |
+
+### Plex commands
+
+These commands are used to consult the albums available on the Plex server
+attached to `EDI`.
+
+| Command | Description             | Usage   |
+| ------- | ----------------------- | ------- |
+| search  | Search album by keyword | /search |
+| info    | View album informations | /info   |

@@ -163,7 +163,6 @@ class Basic(commands.Cog):
             color=discord.Color.blurple(),
         )
 
-        # Useful links
         embed.add_field(
             name='Useful link',
             value='Source code: https://github.com/Droidec/EDI',
@@ -172,16 +171,18 @@ class Basic(commands.Cog):
 
         for cog_name in sorted(self.bot.cogs):
             cog = self.bot.get_cog(cog_name)
-            cmds = cog.get_commands()
+            cmds = cog.walk_commands()
             data = []
 
             for cmd in cmds:
                 description = cmd.description.partition('\n')[0]
-                data.append(f'/{cmd.name} - {description}')
+                if cmd.parent is None:
+                    data.append(f'/{cmd.name} - {description}')
+                else:
+                    data.append(f'/{cmd.parent} {cmd.name} - {description}')
 
             help_text = '\n'.join(data)
 
-            # Cog commands
             embed.add_field(
                 name=f'{cog_name.capitalize()} commands',
                 value=f'```{help_text}```',
@@ -190,7 +191,7 @@ class Basic(commands.Cog):
 
         await ctx.respond(embed=embed, ephemeral=True)
 
-    @commands.slash_command(name='test', description='For development purpose (owner only).')
+    @commands.slash_command(name='test', description='For development purpose.')
     @commands.is_owner()
     async def test(self, ctx: discord.ApplicationContext) -> None:
         """This command is used for development purpose only. Its content
