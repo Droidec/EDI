@@ -13,6 +13,7 @@ import plexapi
 import requests
 from discord import Option, OptionChoice
 from discord.ext import commands
+from discord.ext.pages import Paginator, Page
 from plexapi.server import PlexServer
 
 # Plex server instance
@@ -47,6 +48,9 @@ ALBUM_DESCRIPTION_MAX_LEN = 300
 
 # Number of milliseconds in an hour
 NB_MILLISECONDS_PER_HOUR = 3600000
+
+# Number of medias displayed per page
+NB_MEDIAS_PER_PAGE = 20
 
 async def get_plex_medias(ctx: discord.AutocompleteContext):
     """Gets medias for keyword autocompletion
@@ -107,7 +111,7 @@ class Plex(commands.Cog):
     def download_image(self, url: str, name: str):
         """Downloads the image of a media.
 
-        TODO: async requests?
+        TODO: async requests + set timeout and handle it.
 
         Args:
             url (str):
@@ -167,9 +171,32 @@ class Plex(commands.Cog):
                 The medias section.
             medias (list):
                 The list of medias to render.
+            total (int):
+                The number of medias to render.
         """
-        #TODO
-        await ctx.respond('I should render a paginator here')
+        pages = []
+        nb_pages = total // NB_MEDIAS_PER_PAGE + int(total % NB_MEDIAS_PER_PAGE != 0)
+
+        for index in range(0, nb_pages):
+            start = NB_MEDIAS_PER_PAGE * index
+            end = NB_MEDIAS_PER_PAGE * (index + 1)
+
+            title = self.truncate_field(f'Page {index + 1} of {nb_pages} in {section.title} section', DISCORD_EMBED_TITLE_MAX_LEN)
+            description = self.truncate_field('\n'.join(f'- {media.title}' for media in medias[start:end]), DISCORD_EMBED_DESCRIPTION_MAX_LEN)
+
+            page = Page(
+                embeds=[
+                    discord.Embed(
+                        title=title,
+                        description=description,
+                        color=discord.Color.blurple()
+                    )
+                ]
+            )
+
+            pages.append(page)
+
+        await Paginator(pages=pages).respond(ctx.interaction)
 
     async def render_media_album(
         self,
@@ -285,7 +312,7 @@ class Plex(commands.Cog):
         if show.thumb is not None:
             embed.set_thumbnail(url=thumb_url)
 
-        embed.set_footer(text=f'{show.studio} • {show.year} • {show.seasonCount} seasons')
+        embed.set_footer(text=f'{show.studio} • {show.year} • {show.seasonCount} season(s)')
 
         await ctx.respond(files=files, embed=embed)
 
@@ -301,6 +328,10 @@ class Plex(commands.Cog):
                 The context of the command.
             media (plexapi.audio.Album or plexapi.video.Movie or plexapi.video.Show):
                 The media to render.
+
+        Raises:
+            PlexUnknownMediaType:
+                The given media is not handled.
         """
         match type(media):
             case plexapi.audio.Album:
@@ -339,6 +370,10 @@ class Plex(commands.Cog):
                 The section to look for.
             keyword (str):
                 The media key or the user input.
+
+        Raises:
+            PlexNoMatchingResults:
+                The given keyword is not matching any results.
         """
         # The command can take more than 3 seconds to compute
         await ctx.defer()
