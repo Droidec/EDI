@@ -34,16 +34,19 @@ available_section = {
     'TV Shows Music': 'album'
 }
 
-# Maximum size of a Discord embed title
+# Maximum number of options an autocomplete view can display
+DISCORD_AUTOCOMPLETE_CHOICES_LIMIT = 25
+
+# Maximum length of a Discord embed title
 DISCORD_EMBED_TITLE_MAX_LEN = 256
 
-# Maximum size of a Discord embed description
+# Maximum length of a Discord embed description
 DISCORD_EMBED_DESCRIPTION_MAX_LEN = 4096
 
-# Maximum size of a Discord embed field value
+# Maximum length of a Discord embed field value
 DISCORD_EMBED_FIELD_VALUE_MAX_LEN = 1024
 
-# Limits the size of an album description
+# Limits the length of an album description
 ALBUM_DESCRIPTION_MAX_LEN = 300
 
 # Number of milliseconds in an hour
@@ -64,7 +67,7 @@ async def get_plex_medias(ctx: discord.AutocompleteContext):
     """
     section_name = ctx.options['section']
     section = plex.library.section(title=section_name)
-    return [OptionChoice(media.title, media.key) for media in section.search(libtype=available_section[section_name], title=ctx.value, sort='titleSort')]
+    return [OptionChoice(media.title, media.key) for media in section.search(libtype=available_section[section_name], title=ctx.value, sort='titleSort', limit=DISCORD_AUTOCOMPLETE_CHOICES_LIMIT)]
 
 class PlexNoMatchingResults(commands.CommandError):
     """Plex no matching results"""
