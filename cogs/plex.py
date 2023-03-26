@@ -5,7 +5,7 @@ Plex EDI commands.
 """
 
 import io
-from datetime import datetime
+import time
 from typing import Union
 
 import discord
@@ -139,9 +139,9 @@ class Plex(commands.Cog):
             A string representing the duration.
         """
         if duration >= NB_MILLISECONDS_PER_HOUR:
-            return datetime.fromtimestamp(duration / 1000.0).strftime('%H h %M min %S sec')
+            return time.strftime('%H h %M min %S sec', time.gmtime(duration // 1000))
 
-        return datetime.fromtimestamp(duration / 1000.0).strftime('%M min %S s')
+        return time.strftime('%M min %S s', time.gmtime(duration // 1000))
 
     def format_track_duration(self, duration: int):
         """Formats a track duration expressed in milliseconds.
@@ -154,9 +154,9 @@ class Plex(commands.Cog):
             A string representing the track duration.
         """
         if duration >= NB_MILLISECONDS_PER_HOUR:
-            return datetime.fromtimestamp(duration / 1000.0).strftime('%H:%M:%S')
+            return time.strftime('%H:%M:%S', time.gmtime(duration // 1000))
 
-        return datetime.fromtimestamp(duration / 1000.0).strftime('%M:%S')
+        return time.strftime('%M:%S', time.gmtime(duration // 1000))
 
     async def render_paginator(
         self,
