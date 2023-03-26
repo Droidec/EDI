@@ -5,12 +5,12 @@ Plex EDI commands.
 """
 
 import io
-import requests
 from datetime import datetime
 from typing import Union
 
 import discord
 import plexapi
+import requests
 from discord import Option, OptionChoice
 from discord.ext import commands
 from plexapi.server import PlexServer
@@ -133,8 +133,8 @@ class Plex(commands.Cog):
         """
         if duration >= NB_MILLISECONDS_PER_HOUR:
             return datetime.fromtimestamp(duration / 1000.0).strftime('%H h %M min %S sec')
-        else:
-            return datetime.fromtimestamp(duration / 1000.0).strftime('%M min %S s')
+
+        return datetime.fromtimestamp(duration / 1000.0).strftime('%M min %S s')
 
     def format_track_duration(self, duration: int):
         """Formats a track duration expressed in milliseconds.
@@ -148,14 +148,15 @@ class Plex(commands.Cog):
         """
         if duration >= NB_MILLISECONDS_PER_HOUR:
             return datetime.fromtimestamp(duration / 1000.0).strftime('%H:%M:%S')
-        else:
-            return datetime.fromtimestamp(duration / 1000.0).strftime('%M:%S')
+
+        return datetime.fromtimestamp(duration / 1000.0).strftime('%M:%S')
 
     async def render_paginator(
         self,
         ctx: discord.ApplicationContext,
         section: plexapi.library.LibrarySection,
-        medias: list, total: int
+        medias: list,
+        total: int
     ) -> None:
         """Renders a paginator containing a list of medias.
 
