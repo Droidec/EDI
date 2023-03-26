@@ -18,7 +18,6 @@ class Fun(commands.Cog):
         bot (commands.Bot):
             EDI bot instance.
     """
-
     images = f'{os.path.realpath(os.path.dirname(__file__))}/images'
     dice_image = {
         'd4': f'{images}/d4.png',
@@ -70,14 +69,16 @@ class Fun(commands.Cog):
             ctx (discord.ApplicationContext):
                 The context of the command.
             sides (int):
-
+                The number of sides of the dice to roll
+            count (int):
+                The number of rolls
         """
         dice = f'd{sides}'
         rolls = [randint(1, sides) for _ in range(0, count)]
         embed = discord.Embed(
             title=f'{sides}-sided dice • {count} time(s)',
             description=f'You rolled {", ".join(map(str, rolls))}',
-            color=discord.Color.blurple(),
+            color=discord.Color.blurple()
         )
 
         (url, file) = self.bot.prepare_local_file(self.dice_image[dice])

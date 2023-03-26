@@ -13,7 +13,6 @@ import traceback
 
 import discord
 from discord.ext import commands
-from discord.ext.pages import Paginator, Page
 
 EDI_VERSION = '1.0.0'
 
@@ -69,7 +68,7 @@ class EDI(commands.Bot):
                 The path to the local file
 
         Returns:
-            A tuple (url, file) containing the url and the Discord file.
+            A tuple containing the url attachment and the Discord file.
         """
         return (f'attachment://{os.path.basename(path)}', discord.File(path))
 
@@ -117,7 +116,7 @@ class EDI(commands.Bot):
 
         trace = ''.join(traceback.format_exception(type(err), err, err.__traceback__))
         self.logger.error(f'{ctx.author.name}#{ctx.author.discriminator} on {ctx.guild.name} raised an exception with slash command '
-                          f'{ctx.command.name}:{ctx.command.options}:\n{trace}')
+                          f'{ctx.command.name}:\n{trace}')
 
 class Basic(commands.Cog):
     """EDI basic commands.
@@ -201,16 +200,7 @@ class Basic(commands.Cog):
             ctx (discord.ApplicationContext):
                 The context of the command.
         """
-        pages = []
-
-        for i in range(1, 50):
-            embed = discord.Embed(title=f'Embed 1-{i}')
-            pages.append(Page(embeds=[embed]))
-
-        await Paginator(
-            pages=pages,
-            timeout=10.0
-        ).respond(ctx.interaction)
+        raise commands.DisabledCommand()
 
     @commands.slash_command(name='version', description='View EDI version.')
     async def version(self, ctx: discord.ApplicationContext) -> None:
