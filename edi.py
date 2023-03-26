@@ -60,12 +60,12 @@ class EDI(commands.Bot):
                     exception = f'{type(err).__name__}: {err}'
                     self.logger.error(f'Failed to load extension "{extension}"\n{exception}')
 
-    def prepare_local_file(self, path: str) -> tuple:
-        """Prepares a local file to be sent on Discord API.
+    def upload_local_image(self, path: str) -> tuple:
+        """Uploads a local image to the Discord API.
 
         Args:
             path (str):
-                The path to the local file
+                The path to the local image
 
         Returns:
             A tuple containing the url attachment and the Discord file.

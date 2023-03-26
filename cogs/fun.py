@@ -81,7 +81,7 @@ class Fun(commands.Cog):
             color=discord.Color.blurple()
         )
 
-        (url, file) = self.bot.prepare_local_file(self.dice_image[dice])
+        (url, file) = self.bot.upload_local_image(self.dice_image[dice])
         embed.set_thumbnail(url=url)
 
         await ctx.respond(file=file, embed=embed)

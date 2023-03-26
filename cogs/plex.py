@@ -39,6 +39,9 @@ DISCORD_EMBED_TITLE_MAX_LEN = 256
 # Maximum size of a Discord embed description
 DISCORD_EMBED_DESCRIPTION_MAX_LEN = 4096
 
+# Maximum size of a Discord embed field value
+DISCORD_EMBED_FIELD_VALUE_MAX_LEN = 1024
+
 # Limits the size of an album description
 ALBUM_DESCRIPTION_MAX_LEN = 300
 
@@ -101,13 +104,13 @@ class Plex(commands.Cog):
         """
         return (text[:size - 3] + '...') if len(text) > size else text
 
-    def download_image(self, thumb: str, name: str):
+    def download_image(self, url: str, name: str):
         """Downloads the image of a media.
 
         TODO: async requests?
 
         Args:
-            thumb (str):
+            url (str):
                 The URL to the image on the Plex server.
             name (str):
                 The name of the file image to send to Discord.
@@ -115,7 +118,7 @@ class Plex(commands.Cog):
         Returns:
             A tuple containing the url attachment and the Discord file.
         """
-        thumbnail = io.BytesIO(requests.get(plex.url(thumb, includeToken=True)).content)
+        thumbnail = io.BytesIO(requests.get(plex.url(url, includeToken=True)).content)
         return (f'attachment://{name}.png', discord.File(fp=thumbnail, filename=f'{name}.png'))
 
     def format_duration(self, duration: int):
@@ -174,8 +177,6 @@ class Plex(commands.Cog):
     ) -> None:
         """Renders an album in an embed.
 
-        TODO: Playlist can be too long (limited to 1024 bytes by Discord API)
-
         Args:
             ctx (discord.ApplicationContext):
                 The context of the command.
@@ -207,7 +208,9 @@ class Plex(commands.Cog):
         if album.thumb is not None:
             embed.set_thumbnail(url=thumb_url)
 
-        embed.add_field(name='Playlist', value='\n'.join(f'{index+1}. {track.title} [{self.format_track_duration(track.duration)}]' for index, track in enumerate(tracks)))
+        playlist = '\n'.join(f'{index+1}. {track.title} [{self.format_track_duration(track.duration)}]' for index, track in enumerate(tracks))
+        playlist = self.truncate_field(playlist, DISCORD_EMBED_FIELD_VALUE_MAX_LEN)
+        embed.add_field(name='Playlist', value=playlist)
 
         if album.art is not None:
             embed.set_footer(text=f'{artist.title} • {album.year} • {nb_tracks} track(s), {self.format_duration(duration)}', icon_url=artist_url)
