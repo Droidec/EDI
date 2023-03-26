@@ -33,8 +33,14 @@ available_section = {
     'TV Shows Music': 'album'
 }
 
-# Limits the size of media description
-MEDIA_DESCRIPTION_LEN = 300
+# Maximum size of a Discord embed title
+DISCORD_EMBED_TITLE_MAX_LEN = 256
+
+# Maximum size of a Discord embed description
+DISCORD_EMBED_DESCRIPTION_MAX_LEN = 4096
+
+# Limits the size of an album description
+ALBUM_DESCRIPTION_MAX_LEN = 300
 
 # Number of milliseconds in an hour
 NB_MILLISECONDS_PER_HOUR = 3600000
@@ -78,6 +84,22 @@ class Plex(commands.Cog):
                 EDI bot instance.
         """
         self.bot = bot
+
+    def truncate_field(self, text: str, size: int):
+        """Truncates a text to size bytes.
+
+        TODO: Move this function in EDI skeleton?
+
+        Args:
+            text (str):
+                The text to truncate.
+            size (int):
+                The maximum size.
+
+        Returns:
+            The text truncated.
+        """
+        return (text[:size - 3] + '...') if len(text) > size else text
 
     def download_image(self, thumb: str, name: str):
         """Downloads the image of a media.
@@ -149,7 +171,7 @@ class Plex(commands.Cog):
         self,
         ctx: discord.ApplicationContext,
         album: plexapi.audio.Album
-    ):
+    ) -> None:
         """Renders an album in an embed.
 
         TODO: Playlist can be too long (limited to 1024 bytes by Discord API)
@@ -161,8 +183,9 @@ class Plex(commands.Cog):
                 The album to render.
         """
         files = []
+        title = self.truncate_field(album.title, DISCORD_EMBED_TITLE_MAX_LEN)
+        description = self.truncate_field(album.summary, ALBUM_DESCRIPTION_MAX_LEN)
         artist = album.artist()
-        summary = album.summary
         tracks = album.tracks()
         nb_tracks = len(tracks)
         duration = sum(track.duration for track in tracks)
@@ -176,8 +199,8 @@ class Plex(commands.Cog):
             files.append(artist_file)
 
         embed = discord.Embed(
-            title=album.title,
-            description=(summary[:MEDIA_DESCRIPTION_LEN] + '...') if len(summary) > MEDIA_DESCRIPTION_LEN else summary,
+            title=title,
+            description=description,
             color=discord.Color.blurple()
         )
 
@@ -193,10 +216,78 @@ class Plex(commands.Cog):
 
         await ctx.respond(files=files, embed=embed)
 
+    async def render_media_movie(
+        self,
+        ctx: discord.ApplicationContext,
+        movie: plexapi.video.Movie
+    ) -> None:
+        """Renders a movie in an embed
+
+        Args:
+            ctx (discord.ApplicationContext):
+                The context of the command.
+            movie (plexapi.audio.Movie):
+                The movie to render.
+        """
+        files = []
+        title = self.truncate_field(movie.title, DISCORD_EMBED_TITLE_MAX_LEN)
+        description = self.truncate_field(movie.summary, DISCORD_EMBED_DESCRIPTION_MAX_LEN)
+        director = movie.directors[0]
+
+        if movie.thumb is not None:
+            (thumb_url, thumb_file) = self.download_image(movie.thumb, 'thumb')
+            files.append(thumb_file)
+
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=discord.Color.blurple()
+        )
+
+        if movie.thumb is not None:
+            embed.set_thumbnail(url=thumb_url)
+
+        embed.set_footer(text=f'{director} • {movie.year} • {self.format_duration(movie.duration)}')
+
+        await ctx.respond(files=files, embed=embed)
+
+    async def render_media_show(
+        self,
+        ctx: discord.ApplicationContext,
+        show: plexapi.video.Show
+    ) -> None:
+        """Renders a show in an embed
+
+        Args:
+            ctx (discord.ApplicationContext):
+                The context of the command.
+            show (plexapi.audio.Show):
+                The show to render.
+        """
+        files = []
+        title = self.truncate_field(show.title, DISCORD_EMBED_TITLE_MAX_LEN)
+        description = self.truncate_field(show.summary, DISCORD_EMBED_DESCRIPTION_MAX_LEN)
+
+        if show.thumb is not None:
+            (thumb_url, thumb_file) = self.download_image(show.thumb, 'thumb')
+            files.append(thumb_file)
+
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=discord.Color.blurple()
+        )
+
+        if show.thumb is not None:
+            embed.set_thumbnail(url=thumb_url)
+
+        embed.set_footer(text=f'{show.studio} • {show.year} • {show.seasonCount} seasons')
+
+        await ctx.respond(files=files, embed=embed)
+
     async def render_media(
         self,
         ctx: discord.ApplicationContext,
-        section: plexapi.library.LibrarySection,
         media: Union[plexapi.audio.Album, plexapi.video.Movie, plexapi.video.Show]
     ) -> None:
         """Renders a media in an embed.
@@ -204,8 +295,6 @@ class Plex(commands.Cog):
         Args:
             ctx (discord.ApplicationContext):
                 The context of the command.
-            section (plexapi.library.LibrarySection):
-                The media section.
             media (plexapi.audio.Album or plexapi.video.Movie or plexapi.video.Show):
                 The media to render.
         """
@@ -213,9 +302,9 @@ class Plex(commands.Cog):
             case plexapi.audio.Album:
                 await self.render_media_album(ctx, media)
             case plexapi.video.Movie:
-                await ctx.respond('I should render a movie here.')
+                await self.render_media_movie(ctx, media)
             case plexapi.video.Show:
-                await ctx.respond('I should render a show here.')
+                await self.render_media_show(ctx, media)
             case _:
                 raise PlexUnknownMediaType(f'`{type(media)}` is not handled for rendering')
 
@@ -267,7 +356,7 @@ class Plex(commands.Cog):
             case 0:
                 raise PlexNoMatchingResults(f'No matching results for `{section_name}` and `{keyword}`')
             case 1:
-                await self.render_media(ctx, section, medias[0])
+                await self.render_media(ctx, medias[0])
             case _:
                 await self.render_paginator(ctx, section, medias, total)
 
