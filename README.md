@@ -10,6 +10,7 @@ universe.
 - [plexapi](https://python-plexapi.readthedocs.io/en/latest/) <= 4.13.4: Python
 bindings for the Plex API.
 - [py-cord](https://docs.pycord.dev) >= 2.4.0: Python API wrapper for Discord
+- [requests](https://requests.readthedocs.io) <= 2.28.2: Python HTTP for humans
 
 ## Usage
 

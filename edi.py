@@ -51,7 +51,7 @@ class EDI(commands.Bot):
     def load_local_extensions(self) -> None:
         """Load EDI local extensions."""
         for file in os.listdir(f'{os.path.realpath(os.path.dirname(__file__))}/cogs'):
-            if file.endswith('.py'):
+            if file.endswith('.py') and file != 'utils.py':
                 extension = file[:-3]
                 try:
                     self.load_extension(f'cogs.{extension}')
@@ -59,18 +59,6 @@ class EDI(commands.Bot):
                 except Exception as err:
                     exception = f'{type(err).__name__}: {err}'
                     self.logger.error(f'Failed to load extension "{extension}"\n{exception}')
-
-    def upload_local_image(self, path: str) -> tuple:
-        """Uploads a local image to the Discord API.
-
-        Args:
-            path (str):
-                The path to the local image
-
-        Returns:
-            A tuple containing the url attachment and the Discord file.
-        """
-        return (f'attachment://{os.path.basename(path)}', discord.File(path))
 
     async def on_ready(self) -> None:
         """Coroutine called when the bot finished logging in."""

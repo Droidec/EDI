@@ -16,11 +16,12 @@ from discord.ext import commands
 from discord.ext.pages import Paginator, Page
 from plexapi.server import PlexServer
 
+from . import utils
+
 # Plex server instance
 plex = None
 
 # Available sections and their properties
-# TODO: get sections dynamically from Plex server
 available_section = {
     'Animes': 'show',
     'Animes Movies': 'movie',
@@ -34,23 +35,11 @@ available_section = {
     'TV Shows Music': 'album'
 }
 
-# Maximum number of options an autocomplete view can display
-DISCORD_AUTOCOMPLETE_CHOICES_LIMIT = 25
-
-# Maximum length of a Discord embed title
-DISCORD_EMBED_TITLE_MAX_LEN = 256
-
-# Maximum length of a Discord embed description
-DISCORD_EMBED_DESCRIPTION_MAX_LEN = 4096
-
-# Maximum length of a Discord embed field value
-DISCORD_EMBED_FIELD_VALUE_MAX_LEN = 1024
+# Number of seconds to wait Plex server before giving up
+PLEX_REQUEST_TIMEOUT_IN_SEC = 2
 
 # Limits the length of an album description
 ALBUM_DESCRIPTION_MAX_LEN = 300
-
-# Number of milliseconds in an hour
-NB_MILLISECONDS_PER_HOUR = 3600000
 
 # Number of medias displayed per page
 NB_MEDIAS_PER_PAGE = 20
@@ -67,13 +56,16 @@ async def get_plex_medias(ctx: discord.AutocompleteContext):
     """
     section_name = ctx.options['section']
     section = plex.library.section(title=section_name)
-    return [OptionChoice(media.title, media.key) for media in section.search(libtype=available_section[section_name], title=ctx.value, sort='titleSort', limit=DISCORD_AUTOCOMPLETE_CHOICES_LIMIT)]
+    return [OptionChoice(media.title, media.key) for media in section.search(libtype=available_section[section_name], title=ctx.value, sort='titleSort', limit=utils.DISCORD_AUTOCOMPLETE_CHOICES_LIMIT)]
 
 class PlexNoMatchingResults(commands.CommandError):
     """Plex no matching results"""
 
 class PlexUnknownMediaType(commands.CommandError):
     """Plex unknown media type"""
+
+class PlexNotResponding(commands.CommandError):
+    """Plex server not responding"""
 
 class Plex(commands.Cog):
     """EDI plex commands.
@@ -94,27 +86,13 @@ class Plex(commands.Cog):
                 EDI bot instance.
         """
         self.bot = bot
+        self.bot.logger.info(plex.library.sections())
 
-    def truncate_field(self, text: str, size: int):
-        """Truncates a text to size bytes.
+    async def download_upload_image(self, url: str, name: str):
+        """Downloads the image of a media from the Plex server and uploads it
+        to the Discord API.
 
-        TODO: Move this function in EDI skeleton?
-
-        Args:
-            text (str):
-                The text to truncate.
-            size (int):
-                The maximum size.
-
-        Returns:
-            The text truncated.
-        """
-        return (text[:size - 3] + '...') if len(text) > size else text
-
-    def download_image(self, url: str, name: str):
-        """Downloads the image of a media.
-
-        TODO: async requests + set timeout and handle it.
+        TODO: async request
 
         Args:
             url (str):
@@ -125,7 +103,10 @@ class Plex(commands.Cog):
         Returns:
             A tuple containing the url attachment and the Discord file.
         """
-        thumbnail = io.BytesIO(requests.get(plex.url(url, includeToken=True)).content)
+        try:
+            thumbnail = io.BytesIO(requests.get(plex.url(url, includeToken=True)).content, timeout=PLEX_REQUEST_TIMEOUT_IN_SEC)
+        except requests.exceptions.Timeout:
+            raise PlexNotResponding('Plex server timed out')
         return (f'attachment://{name}.png', discord.File(fp=thumbnail, filename=f'{name}.png'))
 
     def format_duration(self, duration: int):
@@ -138,7 +119,7 @@ class Plex(commands.Cog):
         Returns:
             A string representing the duration.
         """
-        if duration >= NB_MILLISECONDS_PER_HOUR:
+        if duration >= utils.NB_MILLISECONDS_PER_HOUR:
             return time.strftime('%H h %M min %S sec', time.gmtime(duration // 1000))
 
         return time.strftime('%M min %S s', time.gmtime(duration // 1000))
@@ -153,7 +134,7 @@ class Plex(commands.Cog):
         Returns:
             A string representing the track duration.
         """
-        if duration >= NB_MILLISECONDS_PER_HOUR:
+        if duration >= utils.NB_MILLISECONDS_PER_HOUR:
             return time.strftime('%H:%M:%S', time.gmtime(duration // 1000))
 
         return time.strftime('%M:%S', time.gmtime(duration // 1000))
@@ -184,8 +165,8 @@ class Plex(commands.Cog):
             start = NB_MEDIAS_PER_PAGE * index
             end = NB_MEDIAS_PER_PAGE * (index + 1)
 
-            title = self.truncate_field(f'Page {index + 1} of {nb_pages} in {section.title} section', DISCORD_EMBED_TITLE_MAX_LEN)
-            description = self.truncate_field('\n'.join(f'- {media.title}' for media in medias[start:end]), DISCORD_EMBED_DESCRIPTION_MAX_LEN)
+            title = utils.truncate_text(f'Page {index + 1} of {nb_pages} in {section.title} section', utils.DISCORD_EMBED_TITLE_MAX_LEN)
+            description = utils.truncate_text('\n'.join(f'- {media.title}' for media in medias[start:end]), utils.DISCORD_EMBED_DESCRIPTION_MAX_LEN)
 
             page = Page(
                 embeds=[
@@ -215,19 +196,19 @@ class Plex(commands.Cog):
                 The album to render.
         """
         files = []
-        title = self.truncate_field(album.title, DISCORD_EMBED_TITLE_MAX_LEN)
-        description = self.truncate_field(album.summary, ALBUM_DESCRIPTION_MAX_LEN)
+        title = utils.truncate_text(album.title, utils.DISCORD_EMBED_TITLE_MAX_LEN)
+        description = utils.truncate_text(album.summary, ALBUM_DESCRIPTION_MAX_LEN)
         artist = album.artist()
         tracks = album.tracks()
         nb_tracks = len(tracks)
         duration = sum(track.duration for track in tracks)
 
         if album.thumb is not None:
-            (thumb_url, thumb_file) = self.download_image(album.thumb, 'thumb')
+            (thumb_url, thumb_file) = self.download_upload_image(album.thumb, 'thumb')
             files.append(thumb_file)
 
         if album.art is not None:
-            (artist_url, artist_file) = self.download_image(album.art, 'art')
+            (artist_url, artist_file) = self.download_upload_image(album.art, 'art')
             files.append(artist_file)
 
         embed = discord.Embed(
@@ -240,7 +221,7 @@ class Plex(commands.Cog):
             embed.set_thumbnail(url=thumb_url)
 
         playlist = '\n'.join(f'{index+1}. {track.title} [{self.format_track_duration(track.duration)}]' for index, track in enumerate(tracks))
-        playlist = self.truncate_field(playlist, DISCORD_EMBED_FIELD_VALUE_MAX_LEN)
+        playlist = utils.truncate_text(playlist, utils.DISCORD_EMBED_FIELD_VALUE_MAX_LEN)
         embed.add_field(name='Playlist', value=playlist)
 
         if album.art is not None:
@@ -264,12 +245,12 @@ class Plex(commands.Cog):
                 The movie to render.
         """
         files = []
-        title = self.truncate_field(movie.title, DISCORD_EMBED_TITLE_MAX_LEN)
-        description = self.truncate_field(movie.summary, DISCORD_EMBED_DESCRIPTION_MAX_LEN)
+        title = utils.truncate_text(movie.title, utils.DISCORD_EMBED_TITLE_MAX_LEN)
+        description = utils.truncate_text(movie.summary, utils.DISCORD_EMBED_DESCRIPTION_MAX_LEN)
         director = movie.directors[0]
 
         if movie.thumb is not None:
-            (thumb_url, thumb_file) = self.download_image(movie.thumb, 'thumb')
+            (thumb_url, thumb_file) = self.download_upload_image(movie.thumb, 'thumb')
             files.append(thumb_file)
 
         embed = discord.Embed(
@@ -299,11 +280,11 @@ class Plex(commands.Cog):
                 The show to render.
         """
         files = []
-        title = self.truncate_field(show.title, DISCORD_EMBED_TITLE_MAX_LEN)
-        description = self.truncate_field(show.summary, DISCORD_EMBED_DESCRIPTION_MAX_LEN)
+        title = utils.truncate_text(show.title, utils.DISCORD_EMBED_TITLE_MAX_LEN)
+        description = utils.truncate_text(show.summary, utils.DISCORD_EMBED_DESCRIPTION_MAX_LEN)
 
         if show.thumb is not None:
-            (thumb_url, thumb_file) = self.download_image(show.thumb, 'thumb')
+            (thumb_url, thumb_file) = self.download_upload_image(show.thumb, 'thumb')
             files.append(thumb_file)
 
         embed = discord.Embed(
@@ -421,6 +402,8 @@ class Plex(commands.Cog):
             await ctx.respond(f'{ctx.author.mention} Your search did not match any results.', ephemeral=True)
         elif isinstance(err, PlexUnknownMediaType):
             await ctx.respond(f'{ctx.author.mention} An internal error occurred.', ephemeral=True)
+        elif isinstance(err, PlexNotResponding):
+            await ctx.respond(f'{ctx.author.mention} The Plex server is not responding.', ephemeral=True)
 
 def setup(bot) -> None:
     """Setup Plex commands"""

@@ -11,6 +11,8 @@ import discord
 from discord import Option, OptionChoice
 from discord.ext import commands
 
+from . import utils
+
 class Fun(commands.Cog):
     """EDI fun commands.
 
@@ -81,7 +83,7 @@ class Fun(commands.Cog):
             color=discord.Color.blurple()
         )
 
-        (url, file) = self.bot.upload_local_image(self.dice_image[dice])
+        (url, file) = utils.upload_local_image(self.dice_image[dice])
         embed.set_thumbnail(url=url)
 
         await ctx.respond(file=file, embed=embed)
