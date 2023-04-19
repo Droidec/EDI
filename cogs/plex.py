@@ -86,7 +86,6 @@ class Plex(commands.Cog):
                 EDI bot instance.
         """
         self.bot = bot
-        self.bot.logger.info(plex.library.sections())
 
     async def download_upload_image(self, url: str, name: str):
         """Downloads the image of a media from the Plex server and uploads it
@@ -387,7 +386,7 @@ class Plex(commands.Cog):
         """Coroutine called when an exception is raised in the cog.
 
         If it is a specific error managed by this cog, a response is sent to
-        the author to explain why an error occured. In any case, the generic
+        the user to explain why an error occured. In any case, the generic
         error handler of EDI will be called after that to print the traceback.
 
         TODO: mention and ephemeral not working properly?

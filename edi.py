@@ -84,7 +84,7 @@ class EDI(commands.Bot):
     async def on_application_command_error(self, ctx: discord.ApplicationContext, err: discord.errors.DiscordException) -> None:
         """Coroutine called when an exception is raised in a slash command.
 
-        This error handler responds to the author for generic errors and print
+        This error handler responds to the user for generic errors and print
         the traceback in any case.
 
         Args:
@@ -126,7 +126,7 @@ class Basic(commands.Cog):
 
     @commands.slash_command(name='hello', description='Say hello to EDI.')
     async def hello(self, ctx: discord.ApplicationContext) -> None:
-        """Mentions and greets author.
+        """Mentions and greets user.
 
         Args:
             ctx (discord.ApplicationContext):
@@ -192,7 +192,7 @@ class Basic(commands.Cog):
 
     @commands.slash_command(name='version', description='View EDI version.')
     async def version(self, ctx: discord.ApplicationContext) -> None:
-        """Sends the current version to the author.
+        """Sends the current version to the user.
 
         Args:
             ctx (discord.ApplicationContext):

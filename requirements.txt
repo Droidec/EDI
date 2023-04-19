@@ -1,2 +1,2 @@
 plexapi>=4.13.4
-py-cord[voice]>=2.4.0
+py-cord[voice]>=2.4.1

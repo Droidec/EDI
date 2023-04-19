@@ -56,6 +56,15 @@ These commands are used to play with `EDI`.
 | ------- | ------------- | --------------------- | -------------------------- |
 | roll    | Roll the dice | /roll <sides> <count> | /roll `sides:d6` `count:5` |
 
+### Voice commands
+
+`EDI` features a voice player to play audio from various sources.
+
+| Command | Description           | Usage           |
+| ------- | --------------------- | --------------- |
+| join    | Join a voice channel  | /join <channel> |
+| leave   | Leave a voice channel | /leave          |
+
 ### Plex commands
 
 These commands are used to consult the albums available on the Plex server
