@@ -22,6 +22,10 @@ class EDI(commands.Bot):
     Attributes:
         version (str):
             The bot version.
+        realpath (str):
+            The path to the EDI instance.
+        images (str):
+            The path to image resources.
         config (dict):
             The bot configuration.
         logger (logging.Logger):
@@ -38,6 +42,10 @@ class EDI(commands.Bot):
         """
         super().__init__(**options)
 
+        # Set path
+        self.realpath = os.path.realpath(os.path.dirname(__file__))
+        self.images = f'{self.realpath}/images'
+
         # Set configuration
         self.config = config
 
@@ -50,7 +58,7 @@ class EDI(commands.Bot):
 
     def load_local_extensions(self) -> None:
         """Load EDI local extensions."""
-        for file in os.listdir(f'{os.path.realpath(os.path.dirname(__file__))}/cogs'):
+        for file in os.listdir(f'{self.realpath}/cogs'):
             if file.endswith('.py') and file != 'utils.py':
                 extension = file[:-3]
                 try:

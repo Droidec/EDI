@@ -37,7 +37,7 @@ def truncate_text(text: str, size: int) -> str:
     """
     return (text[:size - 3] + '...') if len(text) > size else text
 
-def upload_local_image(path: str) -> tuple:
+def upload_image(path: str) -> tuple:
     """Uploads a local image to the Discord API.
 
     Args:

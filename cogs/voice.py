@@ -4,6 +4,8 @@ plex.py
 Voice EDI commands.
 """
 
+import asyncio
+
 import discord
 from discord import Option
 from discord.ext import commands
@@ -13,6 +15,55 @@ class VoiceNoChannel(commands.CommandError):
 
 class VoiceNotConnected(commands.CommandError):
     """Voice not connected"""
+
+class Player:
+    """EDI voice player which implements a loop and a queue.
+
+    Attributes:
+        bot (commands.Bot):
+            EDI bot instance.
+        guild (discord.Guild):
+            The guild from which the player belongs to.
+        queue (asyncio.Queue):
+            The player queue.
+        volume (float):
+            The player volume.
+    """
+
+    def __init__(self, bot: commands.Bot, guild: discord.Guild):
+        """Player initializer.
+
+        Args:
+            bot (commands.Bot):
+                EDI bot instance.
+            guild (discord.Guild):
+                The guild from which the player belongs to.
+        """
+        self.bot = bot
+        self.guild = guild
+        self.queue = asyncio.Queue()
+        self.next = asyncio.Event()
+        self.volume = 0.5
+
+        self.bot.loop.create_task(self.player_loop)
+
+    async def player_loop(self):
+        """"""
+        await self.bot.wait_until_ready()
+
+        while not self.bot.is_closed():
+            self.next.clear()
+
+            # Wait for the next track
+            try:
+                async with asyncio.timeout(60):
+                    source = await self.queue.get()
+            except TimeoutError:
+                return
+
+            # Play the track
+            self.guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
+            await self.next.wait()
 
 class Voice(commands.Cog):
     """EDI voice commands.

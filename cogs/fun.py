@@ -18,17 +18,10 @@ class Fun(commands.Cog):
 
     Attributes:
         bot (commands.Bot):
-            EDI bot instance.
+            The EDI bot instance.
+        dice_image (dict):
+            A dictionary containing dice images.
     """
-    images = f'{os.path.realpath(os.path.dirname(__file__))}/images'
-    dice_image = {
-        'd4': f'{images}/d4.png',
-        'd6': f'{images}/d6.png',
-        'd8': f'{images}/d8.png',
-        'd10': f'{images}/d10.png',
-        'd12': f'{images}/d12.png',
-        'd20': f'{images}/d20.png'
-    }
 
     def __init__(self, bot: commands.Bot):
         """Fun cog initializer.
@@ -38,6 +31,14 @@ class Fun(commands.Cog):
                 EDI bot instance.
         """
         self.bot = bot
+        self.dice_image = {
+            'd4': f'{self.bot.images}/d4.png',
+            'd6': f'{self.bot.images}/d6.png',
+            'd8': f'{self.bot.images}/d8.png',
+            'd10': f'{self.bot.images}/d10.png',
+            'd12': f'{self.bot.images}/d12.png',
+            'd20': f'{self.bot.images}/d20.png'
+    }
 
     @commands.slash_command(name='roll', description='Roll the dice.')
     async def roll(
@@ -83,7 +84,7 @@ class Fun(commands.Cog):
             color=discord.Color.blurple()
         )
 
-        (url, file) = utils.upload_local_image(self.dice_image[dice])
+        (url, file) = utils.upload_image(self.dice_image[dice])
         embed.set_thumbnail(url=url)
 
         await ctx.respond(file=file, embed=embed)
